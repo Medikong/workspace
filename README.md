@@ -2,6 +2,20 @@
 
 Medikong `workspace`는 `service`, `gitops`, `infra` repo를 한 로컬 작업공간 아래에 빠르게 준비하기 위한 보조 진입점입니다. monorepo 대체물이 아니며, 각 repo의 브랜치, worktree, commit, push 전략을 강제하지 않습니다.
 
+## 사전 준비
+
+macOS와 Windows Git Bash를 기준으로 합니다. 필요한 도구는 Git, Bash, Task입니다.
+
+```bash
+# macOS
+brew install go-task/tap/go-task
+
+# Windows Git Bash
+winget install Task.Task
+```
+
+다른 설치 방법은 [Task 설치 문서](https://taskfile.dev/docs/installation)를 참고합니다.
+
 ## 빠른 시작
 
 신규 사용자는 `workspace` repo만 먼저 clone한 뒤 bootstrap/status 명령으로 형제 repo를 구성합니다.
@@ -58,19 +72,7 @@ Taskfile은 공식 사용자 진입점입니다. 실제 로직은 `scripts/works
 
 ## 실행 환경
 
-macOS와 Windows Git Bash를 기준으로 합니다. VS Code에서는 `medikong.code-workspace`가 Windows 기본 터미널을 Git Bash로 요청합니다.
-
-필요한 도구는 Git, Bash, Task입니다.
-
-```bash
-# macOS
-brew install go-task/tap/go-task
-
-# Windows Git Bash
-winget install Task.Task
-```
-
-설치 후 Git Bash에서 `task --list`로 workspace 명령을 확인합니다.
+VS Code에서는 `medikong.code-workspace`가 Windows 기본 터미널을 Git Bash로 요청합니다. 설치 후 Git Bash에서 `task --list`로 workspace 명령을 확인합니다.
 
 ## 비목표
 
