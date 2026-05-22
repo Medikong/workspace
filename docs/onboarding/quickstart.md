@@ -13,16 +13,28 @@ cd workspace
 
 ## 2. 명령 확인
 
+workspace는 macOS와 Windows Git Bash를 기준으로 동작합니다. VS Code에서는 `medikong.code-workspace`가 Windows 기본 터미널을 Git Bash로 요청합니다.
+
+Task가 없다면 먼저 설치합니다.
+
 ```bash
-make help
+# macOS
+brew install go-task/tap/go-task
+
+# Windows Git Bash
+winget install Task.Task
 ```
 
-workspace는 macOS, Linux, Windows WSL 또는 Git Bash를 기준으로 동작합니다. VS Code에서는 `medikong.code-workspace`가 Windows 기본 터미널을 Git Bash로 요청합니다. Git Bash에서 `make`가 없다면 `./scripts/workspace.sh help`처럼 스크립트를 직접 실행합니다.
+설치 후 Git Bash 또는 macOS 터미널에서 명령을 확인합니다.
+
+```bash
+task help
+```
 
 ## 3. manifest 확인
 
 ```bash
-make list
+task list
 ```
 
 `list`는 `repos.env`에 정의된 `service`, `gitops`, `infra` repo와 clone 대상 경로를 보여줍니다. 대상 경로는 `workspace/` 내부가 아니라 `../service`, `../gitops`, `../infra`입니다.
@@ -30,7 +42,7 @@ make list
 ## 4. 환경 검사
 
 ```bash
-make doctor
+task doctor
 ```
 
 `doctor`는 Git, Bash, manifest, workspace root, path 충돌을 확인합니다. 로컬 배포, 클라우드 권한, Terraform 상태는 검사하지 않습니다.
@@ -38,7 +50,7 @@ make doctor
 ## 5. repo 구성
 
 ```bash
-make bootstrap
+task bootstrap
 ```
 
 `bootstrap`은 없는 repo만 clone합니다. 이미 `../service`, `../gitops`, `../infra` 폴더가 있으면 덮어쓰지 않고 건너뜁니다.
@@ -46,7 +58,7 @@ make bootstrap
 ## 6. 상태 확인
 
 ```bash
-make status
+task status
 ```
 
 `status`는 각 repo가 존재하는지, 현재 branch가 무엇인지, dirty 상태인지, origin remote가 manifest와 맞는지 간단히 보여줍니다.

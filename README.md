@@ -11,8 +11,8 @@ mkdir medikong
 cd medikong
 git clone https://github.com/Medikong/workspace.git workspace
 cd workspace
-make bootstrap
-make status
+task bootstrap
+task status
 code medikong.code-workspace
 ```
 
@@ -31,11 +31,11 @@ medikong/
 ## 명령
 
 ```bash
-make help
-make list
-make doctor
-make bootstrap
-make status
+task help
+task list
+task doctor
+task bootstrap
+task status
 ```
 
 - `help`: 사용 가능한 workspace 명령을 출력합니다.
@@ -44,11 +44,12 @@ make status
 - `bootstrap`: 없는 repo만 `../service`, `../gitops`, `../infra`로 clone합니다. 이미 있는 폴더는 덮어쓰지 않습니다.
 - `status`: repo 존재 여부, 현재 branch, dirty 여부, origin remote 불일치를 간단히 보여줍니다.
 
-Makefile은 얇은 별칭만 제공합니다. 실제 로직은 `scripts/workspace.sh`에 있습니다.
+Taskfile은 공식 사용자 진입점입니다. 실제 로직은 `scripts/workspace.sh`에 있습니다.
 
 ## 기준 파일
 
 - `repos.env`: workspace 이름, root, repo 목록, remote, clone 기본 branch를 정의합니다.
+- `Taskfile.yml`: `task help/list/doctor/bootstrap/status` 진입점을 정의합니다.
 - `scripts/workspace.sh`: `help`, `list`, `doctor`, `bootstrap`, `status`의 실제 구현입니다.
 - `medikong.code-workspace`: VS Code에서 `workspace`, `service`, `gitops`, `infra`를 함께 여는 작업공간 파일입니다.
 - `docs/adr/0001-use-workspace-as-polyrepo-helper.md`: workspace repo의 역할 결정을 기록합니다.
@@ -57,7 +58,19 @@ Makefile은 얇은 별칭만 제공합니다. 실제 로직은 `scripts/workspac
 
 ## 실행 환경
 
-macOS, Linux, Windows WSL 또는 Git Bash를 기준으로 합니다. VS Code에서는 `medikong.code-workspace`가 Windows 기본 터미널을 Git Bash로 요청합니다. Git Bash에서 `make`가 없다면 `./scripts/workspace.sh help`, `./scripts/workspace.sh status`처럼 스크립트를 직접 실행합니다.
+macOS와 Windows Git Bash를 기준으로 합니다. VS Code에서는 `medikong.code-workspace`가 Windows 기본 터미널을 Git Bash로 요청합니다.
+
+필요한 도구는 Git, Bash, Task입니다.
+
+```bash
+# macOS
+brew install go-task/tap/go-task
+
+# Windows Git Bash
+winget install Task.Task
+```
+
+설치 후 Git Bash에서 `task --list`로 workspace 명령을 확인합니다.
 
 ## 비목표
 
