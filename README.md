@@ -57,7 +57,7 @@ Makefile은 얇은 별칭만 제공합니다. 실제 로직은 `scripts/workspac
 
 ## 실행 환경
 
-macOS, Linux, Windows WSL을 기준으로 합니다. Windows native shell을 별도로 지원하지 않기 때문에 Node/npm 의존성은 두지 않습니다.
+macOS, Linux, Windows WSL 또는 Git Bash를 기준으로 합니다. VS Code에서는 `medikong.code-workspace`가 Windows 기본 터미널을 Git Bash로 요청합니다. Git Bash에서 `make`가 없다면 `./scripts/workspace.sh help`, `./scripts/workspace.sh status`처럼 스크립트를 직접 실행합니다.
 
 ## 비목표
 

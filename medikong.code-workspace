@@ -18,6 +18,7 @@
     }
   ],
   "settings": {
+    "terminal.integrated.defaultProfile.windows": "Git Bash",
     "files.exclude": {
       "**/.DS_Store": true
     }
