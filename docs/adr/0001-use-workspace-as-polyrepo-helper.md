@@ -1,3 +1,29 @@
+---
+id: ADR-0001
+title: "workspace를 polyrepo 보조 진입점으로 사용한다"
+status: accepted
+date: 2026-05-22
+areas:
+  - workspace
+  - repo-boundary
+  - onboarding
+repos:
+  - workspace
+  - service
+  - gitops
+  - infra
+decision_drivers:
+  - polyrepo 책임 경계 유지
+  - 신규 사용자 작업공간 구성 단순화
+  - macOS와 Windows Git Bash 공통 실행
+related:
+  - docs/architecture/repo-boundaries.md
+  - docs/onboarding/quickstart.md
+links: []
+supersedes: []
+superseded_by: null
+---
+
 # ADR 0001: workspace를 polyrepo 보조 진입점으로 사용한다
 
 ## 상태
