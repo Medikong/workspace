@@ -78,6 +78,12 @@ Vagrant + VMware 기반 로컬 클러스터는 실제 검증과 반복 테스트
 | 테스트 기준과 검증 시나리오 정리 | 전체 | `docs/projects_plan/plan/05-scenarios/` | todo |
 | 무엇을 증명할지 정리 | 전체 | `docs/projects_plan/plan/05-scenarios/` | todo |
 
+## 내일 할 일
+
+| 항목 | 담당 | 기록 위치 | 상태 |
+| --- | --- | --- | --- |
+| 공연 티켓 서비스 벤치마킹을 통한 도메인 이해 | 전체 | `docs/members/` | todo |
+
 ## 후속 정리 필요
 
 - Vagrant + VMware 퇴출 범위와 Docker Desktop + Kubernetes / AWS 검증 경계는 `docs/adr/0002-use-docker-desktop-for-local-kubernetes-validation.md`를 기준으로 정리한다.
