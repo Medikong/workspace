@@ -7,8 +7,8 @@
 | 서비스 | 책임 | 저장소 | 주요 API |
 | --- | --- | --- | --- |
 | `auth-service` | 로그인, JWT 발급, role claim | PostgreSQL | `POST /auth/login`, `POST /auth/refresh` |
-| `concert-service` | 공연, 공연장, 회차, 좌석 배치 조회 | PostgreSQL | `GET /concerts`, `GET /concerts/{id}`, `GET /concerts/{id}/seats` |
-| `reservation-service` | 좌석 lock, 예약 생성, 예약 조회/취소, 만료 처리 | PostgreSQL, Redis 후보 | `POST /reservations`, `GET /reservations/{id}`, `POST /reservations/{id}/cancel` |
+| `concert-service` | 공연, 공연장, 회차, 좌석 배치 조회 | PostgreSQL | `GET /concerts`, `GET /concerts/{id}`, `GET /concerts/{id}/performances`, `GET /performances/{id}/seats` |
+| `reservation-service` | 좌석 lock, 예약 생성, 예약 조회/취소, 만료 처리 | PostgreSQL, Redis 후보 | `POST /reservations`, `GET /reservations/{id}`, `GET /reservations/me`, `POST /reservations/{id}/cancel`, `POST /reservations/{id}/expire` |
 | `payment-service` | 결제 mock, 승인/실패/지연 시뮬레이션, 결제 이벤트 발행 | PostgreSQL | `POST /payments`, `GET /payments/{id}` |
 | `ticket-service` | 티켓 발행, QR/PDF 생성, S3 저장, 티켓 조회 | PostgreSQL, S3 | `POST /tickets/issue`, `GET /tickets/{id}`, `GET /tickets/me` |
 | `notification-service` | 예약/결제/티켓 이벤트 기반 알림 저장과 발송 mock | MongoDB | `GET /notifications`, `GET /notifications/{id}` |
@@ -43,6 +43,8 @@
 
 ## API 초안
 
+OpenAPI 작성 규약과 서비스별 분리 구조는 아직 확정 전이다. 팀 논의를 위해 [OpenAPI 규약 샘플](./02-service-architecture/openapi/README.md)에 공통 규약, 공통 컴포넌트, `reservation-service` 예시를 둔다.
+
 ### auth-service
 
 | Method | Path | 목적 |
@@ -55,16 +57,19 @@
 | Method | Path | 목적 |
 | --- | --- | --- |
 | `GET` | `/concerts` | 공연 목록 조회 |
-| `GET` | `/concerts/{concertId}` | 공연 상세 조회 |
-| `GET` | `/concerts/{concertId}/seats` | 회차별 좌석 상태 조회 |
+| `GET` | `/concerts/{id}` | 공연 상세 조회 |
+| `GET` | `/concerts/{id}/performances` | 공연별 회차 목록 조회 |
+| `GET` | `/performances/{id}/seats` | 회차별 좌석 상태 조회 |
 
 ### reservation-service
 
 | Method | Path | 목적 |
 | --- | --- | --- |
 | `POST` | `/reservations` | 좌석 lock과 예약 생성 |
-| `GET` | `/reservations/{reservationId}` | 예약 상태 조회 |
-| `POST` | `/reservations/{reservationId}/cancel` | 예약 취소와 좌석 해제 |
+| `GET` | `/reservations/{id}` | 예약 상태 조회 |
+| `GET` | `/reservations/me` | 내 예약 목록 조회 |
+| `POST` | `/reservations/{id}/cancel` | 예약 취소와 좌석 해제 |
+| `POST` | `/reservations/{id}/expire` | 예약 만료 처리와 좌석 해제 |
 
 ### payment-service
 

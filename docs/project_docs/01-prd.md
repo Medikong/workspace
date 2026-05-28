@@ -58,13 +58,27 @@
 
 ## 범위
 
-| 포함 | 제외 |
-| --- | --- |
-| 로그인/JWT, 공연/좌석 조회, 좌석 lock, 예약 생성, mock 결제, 티켓 발행, 알림 저장 | 실제 PG 연동 |
-| Kafka 기반 후속 처리와 idempotency | 장기 정산/환불/배송 관리 |
-| Docker Compose E2E, k6 부하 테스트, Newman API 검증 | 실제 공연장 좌석 UI 완성도 |
-| Kubernetes, Kong, Istio, Helm, Argo CD 배포 검증 | 대규모 상용 운영 수준의 SLO 계약 |
-| Prometheus, Grafana, Loki, Tempo, Alertmanager 증거 | 실제 SMS/Email 외부 발송 |
+### 이번 범위에 포함
+
+- 핵심 예매 흐름은 별도 프론트엔드 화면 대신 Swagger, Postman, Newman collection으로 검증한다.
+- 로그인과 인증은 운영 검증에 필요한 단순 JWT 발급과 검증으로 구현한다.
+- 공연/좌석 조회, 좌석 lock, 예약 생성, mock 결제, 티켓 발행, 알림 저장을 API 기준으로 연결한다.
+- 관리자 기능은 별도 관리자 UI를 만들지 않고, 운영과 검증에 필요한 API로 대체한다.
+- 결제와 알림은 실제 외부 연동 대신 mock 처리해 승인, 실패, 지연, 저장, 재시도 흐름을 재현한다.
+- Kafka 기반 후속 처리와 idempotency를 검증한다.
+- Docker Compose E2E, k6 부하 테스트, Newman API 검증을 수행한다.
+- Kubernetes, Kong, Istio, Helm, Argo CD 배포 검증을 수행한다.
+- Prometheus, Grafana, Loki, Tempo, Alertmanager로 운영 증거를 남긴다.
+
+### 이번 범위에서 제외
+
+- 실제 PG 연동은 하지 않는다.
+- 장기 정산, 환불, 배송 관리는 다루지 않는다.
+- 실제 공연장 좌석 UI와 상용 수준의 프론트엔드 완성도는 목표로 두지 않는다.
+- 별도 관리자 화면은 만들지 않는다.
+- 복잡한 회원가입, 소셜 로그인, 세밀한 권한 관리 같은 상용 인증 기능은 구현하지 않는다.
+- 실제 SMS/Email 외부 발송은 하지 않는다.
+- 대규모 상용 운영 수준의 SLO 계약은 다루지 않는다.
 
 ## 기술 스택
 
