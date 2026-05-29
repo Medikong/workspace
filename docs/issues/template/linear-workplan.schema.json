@@ -88,7 +88,7 @@
     "task": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["local_id", "title", "description", "depends_on"],
+      "required": ["local_id", "title", "description", "repository", "depends_on"],
       "properties": {
         "local_id": {
           "$ref": "#/$defs/localId"
@@ -115,6 +115,11 @@
           "type": "string",
           "minLength": 1
         },
+        "repository": {
+          "type": "string",
+          "enum": ["workspace", "service", "gitops", "infra"],
+          "minLength": 1
+        },
         "state": {
           "type": "string",
           "minLength": 1
@@ -135,7 +140,8 @@
           "type": ["string", "null"]
         },
         "estimate": {
-          "type": "number",
+          "type": ["number", "null"],
+          "description": "Optional estimated effort. Use null when not estimated.",
           "minimum": 0
         },
         "dueDate": {
