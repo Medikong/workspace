@@ -55,6 +55,9 @@ tasks:
   - 로컬 workplan
   - 하위 이슈 후보 목록
   estimate: null
+  links:
+  - title: Medikong/workspace#4
+    url: https://github.com/Medikong/workspace/issues/4
 - local_id: cicd.service-ci-pipeline
   title: 서비스별 CI 파이프라인 분리
   type: implementation
@@ -89,6 +92,9 @@ tasks:
   - service CI workflow 변경 PR
   - 변경 서비스 감지 결과 예시
   estimate: null
+  links:
+  - title: Medikong/service#4
+    url: https://github.com/Medikong/service/issues/4
 - local_id: cicd.service-tests
   title: 서비스별 단위·통합 테스트 개선
   type: test
@@ -124,6 +130,9 @@ tasks:
   - 서비스별 테스트 실행 결과
   - 테스트 러너 또는 테스트 workflow 변경 PR
   estimate: null
+  links:
+  - title: Medikong/service#5
+    url: https://github.com/Medikong/service/issues/5
 - local_id: cicd.service-image-build
   title: 변경 서비스 기준 Docker 이미지 빌드 자동화
   type: implementation
@@ -159,6 +168,9 @@ tasks:
   - image build workflow 변경 PR
   - 서비스별 image tag와 digest 예시
   estimate: null
+  links:
+  - title: Medikong/service#6
+    url: https://github.com/Medikong/service/issues/6
 - local_id: cicd.infra-private-ecr
   title: 서비스 이미지용 Private ECR 레지스트리 준비
   type: ops
@@ -195,6 +207,9 @@ tasks:
   - ECR repository 목록
   - registry URI 목록
   estimate: null
+  links:
+  - title: Medikong/infra#3
+    url: https://github.com/Medikong/infra/issues/3
 - local_id: cicd.gitops-validation
   title: GitOps 검증 파이프라인 개선
   type: test
@@ -231,3 +246,6 @@ tasks:
   - GitOps validation workflow 변경 PR
   - mismatch 검출 결과 예시
   estimate: null
+  links:
+  - title: Medikong/gitops#3
+    url: https://github.com/Medikong/gitops/issues/3
