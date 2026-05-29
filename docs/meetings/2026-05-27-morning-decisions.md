@@ -19,7 +19,7 @@ attendees:
   - 명수
 related:
   - docs/adr/0002-use-docker-desktop-for-local-kubernetes-validation.md
-  - docs/issues/
+  - docs/trouble/
   - docs/projects_plan/
   - GitHub Issues
   - GitHub Projects
@@ -41,7 +41,7 @@ links: []
 | 문서 유형 | 기록 위치 | 목적 |
 | --- | --- | --- |
 | ADR | `docs/adr/` | 구조적 의사결정과 대안, 채택 사유 기록 |
-| 이슈, 트러블 | `docs/issues/` | 장애, 리스크, 검증 실패, 후속 추적 필요 사항 기록 |
+| 트러블 | `docs/trouble/` | 장애, 문제, 검증 실패, 후속 추적 필요 사항 기록 |
 | 스프린트 결과 | `docs/projects_plan/` | 일정, 범위, 완료 결과, 다음 계획 기록 |
 | 런북 | 담당 repo 문서 | 반복 운영 절차와 장애 대응 절차 기록 |
 
