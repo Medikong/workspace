@@ -18,6 +18,7 @@ ADR은 Architecture Decision Record의 약자로, 중요한 결정을 당시의 
 | --- | --- | --- | --- | --- |
 | ADR-0001 | accepted | 2026-05-22 | workspace를 polyrepo 보조 진입점으로 사용한다 | `0001-use-workspace-as-polyrepo-helper.md` |
 | ADR-0002 | accepted | 2026-05-27 | 로컬 Kubernetes 검증은 Docker Desktop을 기준으로 한다 | `0002-use-docker-desktop-for-local-kubernetes-validation.md` |
+| ADR-0003 | accepted | 2026-05-29 | Kong은 Edge API Gateway로, Istio는 내부 Service Mesh로 분리한다 | `0003-separate-kong-edge-gateway-and-istio-service-mesh.md` |
 
 ## Frontmatter
 

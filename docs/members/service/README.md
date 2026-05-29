@@ -5,6 +5,7 @@
 ## 최종 통합 문서
 
 - [공연 티켓 예매 서비스 최종 통합 계획](./ticketing-final-service-plan.md)
+- [Kong + Istio 역할 분리 정리](./kong-istio-role-separation.md)
 
 ## 기준 HTML 문서
 
