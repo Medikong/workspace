@@ -1,5 +1,5 @@
 ---
-id: ISSUE-000
+id: TROUBLE-000
 title: ""
 status: open
 priority: p2
@@ -16,11 +16,11 @@ related: []
 links: []
 ---
 
-# Issue Title
+# Trouble Title
 
 ## Context
 
-이슈가 발견된 배경과 관련 repo, 기능, 문서, 환경을 적는다.
+트러블이 발견된 배경과 관련 repo, 기능, 문서, 환경을 적는다.
 
 ## Symptoms
 
