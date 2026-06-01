@@ -1,90 +1,135 @@
 # Medikong workspace
 
-Medikong `workspace`는 `service`, `gitops`, `infra` repo를 한 로컬 작업공간 아래에 빠르게 준비하기 위한 보조 진입점입니다. monorepo 대체물이 아니며, 각 repo의 브랜치, worktree, commit, push 전략을 강제하지 않습니다.
+## 프로젝트 주제
 
-## 사전 준비
-
-macOS와 Windows Git Bash를 기준으로 합니다. 필요한 도구는 Git, Bash, Task입니다.
-
-```bash
-# macOS
-brew install go-task/tap/go-task
-
-# Windows Git Bash
-winget install Task.Task
+```
+인기 공연 티켓 오픈 순간의 트래픽 폭주를 견디는 예매 시스템을 만듭니다.
+좌석 중복 발행을 막고, 결제·티켓 발행·알림 장애를 격리하며, 운영자가 관측 가능한 구조로 검증합니다.
 ```
 
-다른 설치 방법은 [Task 설치 문서](https://taskfile.dev/docs/installation)를 참고합니다.
+- 공연/좌석 조회, 좌석 lock, 예약 생성, mock 결제, 티켓 발행, 알림 저장 흐름을 API 기준으로 연결합니다.
+- Kafka 기반 후속 처리와 idempotency로 예약 API와 티켓·알림 처리를 분리합니다.
+- k6, Postman/Newman, Docker Compose E2E로 티켓 오픈 피크와 핵심 예매 흐름을 검증합니다.
+- Kubernetes, Kong, Istio, Helm, Argo CD로 배포·트래픽 제어·서비스 메시를 검증합니다.
+- Prometheus, Grafana, Loki, Tempo, Alertmanager로 장애 원인과 병목을 추적합니다.
 
-## 빠른 시작
+```mermaid
+flowchart LR
+    A((티켓 오픈<br/>트래픽 피크))
+    B((좌석 정합성<br/>중복 발행 방지))
+    C((결제 이벤트<br/>승인·실패·지연))
+    D((후속 처리<br/>티켓·알림 분리))
+    E((운영 관측<br/>metric·log·trace))
+    F((고도화<br/>HPA·Istio·Rollback))
 
-신규 사용자는 `workspace` repo만 먼저 clone한 뒤 bootstrap/status 명령으로 형제 repo를 구성합니다.
-
-```bash
-mkdir medikong
-cd medikong
-git clone https://github.com/Medikong/workspace.git workspace
-cd workspace
-task bootstrap
-task status
-code medikong.code-workspace
+    A --> B --> C --> D --> E --> F --> A
 ```
 
-구성 후 로컬 디렉터리는 다음처럼 배치됩니다.
+## 목표
+
+- 좌석 중복 0건
+  동시 예매 상황에서도 한 좌석에는 하나의 유효 티켓만 발행합니다.
+
+- 후속 처리 분리
+  예약 API와 티켓/알림 후속 처리를 Kafka 이벤트로 분리합니다.
+
+- 장애 격리
+  알림 장애가 결제 완료와 티켓 발행 흐름을 실패시키지 않도록 설계합니다.
+
+- 트래픽 폭발 대응
+  HPA와 backpressure 관측으로 티켓 오픈 피크를 설명합니다.
+
+- 통신 보안과 배포 안정성
+  Kong JWT, NetworkPolicy, Istio mTLS, canary/rollback을 검증합니다.
+
+- 운영 가시성
+  metric, log, trace로 병목과 장애 원인을 찾을 수 있게 합니다.
+
+- Object Storage 분리
+  티켓 QR/PDF artifact를 S3에 저장해 app pod를 stateless하게 유지합니다.
+
+## 기술 스택
+
+### Backend
+
+![Python](https://img.shields.io/badge/Python-3776AB?style=flat-square&logo=python&logoColor=white)
+![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=flat-square&logo=fastapi&logoColor=white)
+![JWT](https://img.shields.io/badge/JWT-000000?style=flat-square&logo=jsonwebtokens&logoColor=white)
+
+### Data & Messaging
+
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?style=flat-square&logo=postgresql&logoColor=white)
+![MongoDB](https://img.shields.io/badge/MongoDB-47A248?style=flat-square&logo=mongodb&logoColor=white)
+![Amazon S3](https://img.shields.io/badge/Amazon_S3-569A31?style=flat-square&logo=amazons3&logoColor=white)
+![Kafka](https://img.shields.io/badge/Kafka-231F20?style=flat-square&logo=apachekafka&logoColor=white)
+
+### Platform
+
+![Docker](https://img.shields.io/badge/Docker-2496ED?style=flat-square&logo=docker&logoColor=white)
+![Kubernetes](https://img.shields.io/badge/Kubernetes-326CE5?style=flat-square&logo=kubernetes&logoColor=white)
+![Kong](https://img.shields.io/badge/Kong-003459?style=flat-square&logo=kong&logoColor=white)
+![Istio](https://img.shields.io/badge/Istio-466BB0?style=flat-square&logo=istio&logoColor=white)
+
+### CI/CD & IaC
+
+![GitHub Actions](https://img.shields.io/badge/GitHub_Actions-2088FF?style=flat-square&logo=githubactions&logoColor=white)
+![Helm](https://img.shields.io/badge/Helm-0F1689?style=flat-square&logo=helm&logoColor=white)
+![Argo CD](https://img.shields.io/badge/Argo_CD-EF7B4D?style=flat-square&logo=argo&logoColor=white)
+![Terraform](https://img.shields.io/badge/Terraform-844FBA?style=flat-square&logo=terraform&logoColor=white)
+![AWS](https://img.shields.io/badge/AWS-232F3E?style=flat-square&logo=amazonaws&logoColor=white)
+![Amazon ECR](https://img.shields.io/badge/Amazon_ECR-FF9900?style=flat-square&logo=amazonaws&logoColor=white)
+
+### Logging & Observability
+
+![structlog](https://img.shields.io/badge/structlog-3776AB?style=flat-square&logo=python&logoColor=white)
+![OpenTelemetry](https://img.shields.io/badge/OpenTelemetry-000000?style=flat-square&logo=opentelemetry&logoColor=white)
+![kube-prometheus-stack](https://img.shields.io/badge/kube--prometheus--stack-E6522C?style=flat-square&logo=prometheus&logoColor=white)
+![Prometheus Operator](https://img.shields.io/badge/Prometheus_Operator-E6522C?style=flat-square&logo=prometheus&logoColor=white)
+![Prometheus](https://img.shields.io/badge/Prometheus-E6522C?style=flat-square&logo=prometheus&logoColor=white)
+![Alertmanager](https://img.shields.io/badge/Alertmanager-E6522C?style=flat-square&logo=prometheus&logoColor=white)
+![Grafana](https://img.shields.io/badge/Grafana-F46800?style=flat-square&logo=grafana&logoColor=white)
+![node-exporter](https://img.shields.io/badge/node--exporter-E6522C?style=flat-square&logo=prometheus&logoColor=white)
+![Loki](https://img.shields.io/badge/Loki-F46800?style=flat-square&logo=grafana&logoColor=white)
+![Tempo](https://img.shields.io/badge/Tempo-F46800?style=flat-square&logo=grafana&logoColor=white)
+
+### Quality & Test
+
+![k6](https://img.shields.io/badge/k6-7D64FF?style=flat-square&logo=k6&logoColor=white)
+![Postman](https://img.shields.io/badge/Postman-FF6C37?style=flat-square&logo=postman&logoColor=white)
+![Newman](https://img.shields.io/badge/Newman-FF6C37?style=flat-square&logo=postman&logoColor=white)
+![Trivy](https://img.shields.io/badge/Trivy-1904DA?style=flat-square&logo=aqua&logoColor=white)
+
+## 레포지토리 구조
 
 ```text
 medikong/
-  workspace/
-  service/
-  gitops/
-  infra/
+  workspace/  # 공통 문서, 온보딩, repo manifest
+  service/    # 서비스 코드, 테스트, 이미지 빌드
+  gitops/     # Kubernetes/GitOps 배포 선언
+  infra/      # 클러스터, 클라우드, 네트워크 기반
 ```
 
-`medikong/`은 작업공간 루트일 뿐 git repo가 아닙니다. clone 대상 repo는 `workspace/` 안에 넣지 않고 `workspace/`의 형제 폴더로 둡니다.
+## 현재 진행상황
 
-## 명령
+기본 프로젝트에서는 모노레포와 대주제 중심 작업 분배로 인해 역할 충돌, 중복 작업, 진행상황 파악 문제가 있었습니다.
+현재는 repo를 책임별로 분리하고, `workspace`를 공통 문서와 진행 기준점으로 두어 협업 구조를 재정비하고 있습니다.
 
-```bash
-task help
-task list
-task doctor
-task bootstrap
-task status
-```
+## 심화 프로젝트 방향
 
-- `help`: 사용 가능한 workspace 명령을 출력합니다.
-- `list`: `repos.env`에 정의된 repo 목록과 대상 경로를 출력합니다.
-- `doctor`: Git, Bash, manifest, workspace root, path 충돌을 검사합니다.
-- `bootstrap`: 없는 repo만 `../service`, `../gitops`, `../infra`로 clone합니다. 이미 있는 폴더는 덮어쓰지 않습니다.
-- `status`: repo 존재 여부, 현재 branch, dirty 여부, origin remote 불일치를 간단히 보여줍니다.
+이번 심화 프로젝트에서는 기본 프로젝트에서 드러난 협업 구조, 배포 검증, 운영 검증의 한계를 개선하고 구체화합니다.
 
-Taskfile은 공식 사용자 진입점입니다. 실제 로직은 `scripts/workspace.sh`에 있습니다.
+- repo를 `workspace`, `service`, `gitops`, `infra`로 분리해 책임 범위를 명확히 합니다.
+- 공통 인프라 선행 조건을 먼저 정리해 팀원이 같은 기준 위에서 작업하도록 합니다.
+- Docker Compose E2E, Postman/Newman, k6로 서비스 간 흐름과 부하 상황을 검증합니다.
+- GitHub Actions, Docker image, Argo CD 흐름을 분리해 테스트·빌드·배포 단계를 명확히 합니다.
+- secret, Dockerfile, 이미지 취약점 검사를 CI/CD에 통합해 보안을 강화합니다.
+- Prometheus, Grafana, Loki, Tempo, Alertmanager로 운영 상태를 설명할 수 있는 증거를 남깁니다.
+- 서비스 메시, 장애 격리, canary/rollback 같은 고도화 방향을 멘토링에서 점검합니다.
 
-## 기준 파일
+## 레퍼런스
 
-- `repos.env`: workspace 이름, root, repo 목록, remote, clone 기본 branch를 정의합니다.
-- `Taskfile.yml`: `task help/list/doctor/bootstrap/status` 진입점을 정의합니다.
-- `scripts/workspace.sh`: `help`, `list`, `doctor`, `bootstrap`, `status`의 실제 구현입니다.
-- `medikong.code-workspace`: VS Code에서 `workspace`, `service`, `gitops`, `infra`를 함께 여는 작업공간 파일입니다.
-- `docs/adr/0001-use-workspace-as-polyrepo-helper.md`: workspace repo의 역할 결정을 기록합니다.
-- `docs/onboarding/quickstart.md`: 신규 참여자를 위한 첫 실행 흐름입니다.
-- `docs/architecture/repo-boundaries.md`: repo별 책임 경계입니다.
-- `docs/trouble/README.md`: 진행 중 발생한 문제와 장애의 인덱스와 파일별 기록 템플릿입니다.
-- `docs/projects_plan/README.md`: 프로젝트 계획, workplan, 참고 문서의 읽는 순서와 폴더 역할입니다.
-
-## 실행 환경
-
-VS Code에서는 `medikong.code-workspace`가 Windows 기본 터미널을 Git Bash로 요청합니다. 설치 후 Git Bash에서 `task --list`로 workspace 명령을 확인합니다.
-
-## 비목표
-
-이번 MVP는 빠른 구성, 상태 확인, 공통 문서 기준점에 집중합니다.
-
-- workspace는 monorepo가 아니며 repo 내부에 다른 repo를 중첩 clone하지 않습니다.
-- workspace는 브랜치, worktree, commit, push 전략을 강제하지 않습니다.
-- workspace는 update 명령, worktree 관리, 로컬 배포 사이클, Ansible, Terraform, AWS 자동 실행을 포함하지 않습니다.
-- 각 repo의 상세 개발/배포 명령은 해당 repo의 README와 문서를 기준으로 합니다.
-
-## 참고
-
-이 repo는 Medikong repo 분리 결정의 보조 진입점입니다. `service`는 애플리케이션 코드와 테스트, `gitops`는 Kubernetes/GitOps 배포 선언, `infra`는 클러스터와 클라우드 자원 구성을 담당합니다.
+- workspace 설치, 빠른 시작, 명령, 기준 파일, 실행 환경, 비목표: [docs/references/workspace.md](docs/references/workspace.md)
+- 신규 참여자 첫 실행 흐름: [docs/onboarding/quickstart.md](docs/onboarding/quickstart.md)
+- repo별 책임 경계: [docs/architecture/repo-boundaries.md](docs/architecture/repo-boundaries.md)
+- workspace 역할 결정 기록: [docs/adr/0001-use-workspace-as-polyrepo-helper.md](docs/adr/0001-use-workspace-as-polyrepo-helper.md)
+- 프로젝트 목표: [docs/project_docs/00-GOAL.md](docs/project_docs/00-GOAL.md)
