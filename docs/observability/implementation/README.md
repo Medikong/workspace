@@ -13,14 +13,72 @@
 
 ## 기술 스택 결론
 
-- Metrics: `kube-prometheus-stack`, Prometheus Operator, Prometheus, Alertmanager, Grafana
-- Application instrumentation: OpenTelemetry SDK/Instrumentation, Prometheus client 또는 OTel custom metrics
-- Python application logging: `stdlib logging`, `structlog`, `opentelemetry-instrumentation-logging`, `asgi-correlation-id`
-- Logs pipeline: 애플리케이션 로그는 stdout/stderr로 출력하고, Pod/container stdout/stderr 로그를 Collector filelog receiver가 수집해 OpenTelemetry logs pipeline으로 일원화한다. 기본 backend는 Loki로 두고, Elastic/Kibana는 서비스별 에러 로그 필터와 `request_id` 검색 요구가 유지될 때 같은 log signal을 병행 export하는 선택지로 둔다.
-- Traces backend: Tempo, OpenTelemetry Collector OTLP receiver
-- Kubernetes/Infrastructure metrics: kube-state-metrics, kubelet/cAdvisor, node-exporter, Kubernetes Events
-- Alternative/parallel candidates: Jaeger, Mimir 또는 Prometheus remote write
-- Label policy: `trace_id`, `request_id`, `tenant_id`, 주문/결제 ID는 수집 대상이지만 metric label 또는 Loki label 대상은 아니다. Elastic/Kibana에서는 정확 조회가 필요한 필드만 index template으로 별도 관리한다.
+Metrics 기본 스택:
+
+- `kube-prometheus-stack`
+- Prometheus Operator
+- Prometheus
+- Alertmanager
+- Grafana
+- kube-state-metrics
+- node-exporter
+
+Application instrumentation:
+
+- OpenTelemetry SDK/Instrumentation
+- Prometheus client 또는 OTel custom metrics
+- HTTP metric, trace, resource attribute는 OpenTelemetry 기준으로 맞춘다.
+- 주문/결제/중복 주문 같은 비즈니스 metric은 서비스 코드에서 명시적으로 노출한다.
+
+Python application logging:
+
+- `stdlib logging`
+- `structlog`
+- `opentelemetry-instrumentation-logging`
+- `asgi-correlation-id`
+- 애플리케이션 로그는 stdout/stderr 한 줄 JSON으로 출력한다.
+- `opentelemetry-instrumentation-logging`은 로그 전송 주 경로가 아니라 `trace_id`, `span_id`, `service.name` 주입 역할로 둔다.
+
+Logs pipeline:
+
+- Pod/container stdout/stderr 로그를 OpenTelemetry Collector filelog receiver가 수집한다.
+- Collector의 OpenTelemetry logs pipeline으로 수집 경로를 일원화한다.
+- 기본 backend는 Loki로 둔다.
+- Elastic/Kibana는 서비스별 에러 로그 필터와 `request_id` 검색 요구가 유지될 때 Collector에서 병행 export하는 선택지로 둔다.
+
+Traces pipeline:
+
+- OpenTelemetry instrumentation이 span을 생성하고 trace context를 전파한다.
+- OpenTelemetry Collector OTLP receiver가 trace를 수집한다.
+- 기본 trace backend는 Tempo로 둔다.
+- Jaeger는 대안 후보로만 둔다.
+
+Kubernetes/Infrastructure:
+
+- kubelet/cAdvisor
+- kube-state-metrics
+- node-exporter
+- Kubernetes Events
+- Pod/Node resource metric은 특정 시점 스냅샷보다 연속 시계열 보존을 전제로 본다.
+
+Dashboard/Alert:
+
+- Grafana dashboard JSON을 GitOps repo에서 관리한다.
+- ConfigMap provisioning 또는 kube-prometheus-stack dashboard sidecar로 반영한다.
+- 에러율, 응답 지연, Pod CrashLoop 알림은 PrometheusRule CRD로 정의한다.
+- Alertmanager가 alert routing, grouping, notification을 담당한다.
+- Grafana Alerting은 기본 후보에서 제외한다.
+
+Long-term storage:
+
+- Prometheus 로컬 TSDB는 기본 단기 저장소로 둔다.
+- Mimir 또는 Prometheus remote write 대상은 30일/90일 이상 장기 metric 보존이 필요할 때 붙이는 확장 옵션이다.
+
+Label policy:
+
+- `trace_id`, `request_id`, `tenant_id`, 주문/결제 ID는 수집 대상이다.
+- 위 식별자는 metric label 또는 Loki label 대상이 아니다.
+- Elastic/Kibana에서는 정확 조회가 필요한 필드만 index template으로 별도 관리한다.
 
 ## 기준 요구사항
 
@@ -145,36 +203,6 @@ stdlib logging 기반 설정
 | 적합성 근거 | Grafana는 Prometheus, Loki, Tempo datasource를 한 화면에서 연결할 수 있어 metric/log/trace drilldown에 적합하다.<br>`PrometheusRule`은 alert rule을 Kubernetes manifest로 관리할 수 있어 GitOps 요구와 맞는다.<br>Alertmanager는 Prometheus alert의 routing과 notification을 담당하므로 `PrometheusRule` 기반 알림과 자연스럽게 연결된다. |
 | 제외 기준 | Grafana Alerting은 이번 기본 후보에서 제외한다. 요구사항이 `PrometheusRule` CRD를 명시하므로 alert rule의 기준 위치를 Prometheus/GitOps manifest로 고정한다. |
 | 주의 기준 | 비즈니스 지표 alert는 장애성 실패와 의도된 거절을 섞지 않도록 `result`, `failure_kind`, `expected` 기준을 명확히 해야 한다.<br>Dashboard query와 PrometheusRule query가 서로 다른 계산식을 쓰지 않도록 공통 PromQL 기준을 문서화한다. |
-
-## 스택 조합 관점
-
-```text
-Application services
-  ├─ HTTP metrics/traces: OpenTelemetry instrumentation
-  ├─ Business metrics: /metrics or OTLP metrics
-  └─ stdout/stderr JSON logs: trace_id, request_id, correlation_id, service, k8s context
-
-Kubernetes
-  ├─ kubelet/cAdvisor: container CPU/memory/network
-  ├─ kube-state-metrics: Pod/Deployment/HPA/Node 상태
-  ├─ container stdout/stderr logs: Collector filelog receiver
-  └─ Kubernetes Events: scheduling, image pull, probe, OOM
-
-Collectors
-  ├─ kube-prometheus-stack: Prometheus Operator, Prometheus, Alertmanager, Grafana
-  └─ OpenTelemetry Collector: filelog logs, OTLP traces, optional OTLP metrics
-
-Backends
-  ├─ Prometheus: metrics
-  ├─ Loki: logs
-  └─ Tempo: traces
-
-Grafana
-  ├─ 서비스 SLI 대시보드
-  ├─ 비즈니스 SLI 대시보드
-  ├─ Kubernetes 상태 대시보드
-  └─ trace_id 기반 log/trace drilldown
-```
 
 ## Repo별 검토 경계
 

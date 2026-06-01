@@ -1,0 +1,234 @@
+Diagram:
+  DefinitionFiles:
+    - Type: URL
+      Url: "https://raw.githubusercontent.com/awslabs/diagram-as-code/main/definitions/definition-for-aws-icons-light.yaml"
+    - Type: LocalFile
+      LocalFile: "docs/observability/implementation/observability-icons.aws.def.yaml"
+
+  Resources:
+    Canvas:
+      Type: AWS::Diagram::Canvas
+      Direction: vertical
+      Children:
+        - AWSCloud
+
+    AWSCloud:
+      Type: AWS::Diagram::Cloud
+      Preset: AWSCloudNoLogo
+      Direction: vertical
+      Align: center
+      Children:
+        - Region
+
+    Region:
+      Type: AWS::Diagram::Resource
+      Title: "AWS Region"
+      Direction: vertical
+      Children:
+        - VPC
+        - OptionalBackends
+
+    VPC:
+      Type: AWS::EC2::VPC
+      Direction: vertical
+      Children:
+        - KubernetesCluster
+
+    KubernetesCluster:
+      Type: AWS::Diagram::Resource
+      Title: "Self-managed Kubernetes Cluster"
+      Direction: vertical
+      Children:
+        - ControlPlaneGroup
+        - WorkerNodeGroup
+        - ObservabilityNamespace
+
+    ControlPlaneGroup:
+      Type: AWS::Diagram::Resource
+      Title: "Control Plane Nodes"
+      Direction: horizontal
+      Children:
+        - ControlPlaneNodeA
+        - ControlPlaneNodeB
+        - ControlPlaneNodeC
+
+    ControlPlaneNodeA:
+      Type: AWS::EC2::Instance
+      Title: "Control Plane Node A"
+      Direction: vertical
+      Children:
+        - ApiServerA
+        - EtcdA
+
+    ApiServerA:
+      Type: Observability::Kubernetes
+      Title: "kube-apiserver"
+
+    EtcdA:
+      Type: AWS::Diagram::Resource
+      Title: "etcd"
+
+    ControlPlaneNodeB:
+      Type: AWS::EC2::Instance
+      Title: "Control Plane Node B"
+      Direction: vertical
+      Children:
+        - SchedulerB
+        - ControllerManagerB
+
+    SchedulerB:
+      Type: Observability::Kubernetes
+      Title: "kube-scheduler"
+
+    ControllerManagerB:
+      Type: Observability::Kubernetes
+      Title: "kube-controller-manager"
+
+    ControlPlaneNodeC:
+      Type: AWS::EC2::Instance
+      Title: "Control Plane Node C"
+      Direction: vertical
+      Children:
+        - ApiServerC
+        - EtcdC
+
+    ApiServerC:
+      Type: Observability::Kubernetes
+      Title: "kube-apiserver"
+
+    EtcdC:
+      Type: AWS::Diagram::Resource
+      Title: "etcd"
+
+    WorkerNodeGroup:
+      Type: AWS::Diagram::Resource
+      Title: "Worker Node Group"
+      Direction: horizontal
+      Children:
+        - WorkerNodeA
+        - WorkerNodeB
+
+    WorkerNodeA:
+      Type: AWS::EC2::Instance
+      Title: "Worker Node A"
+      Direction: vertical
+      Children:
+        - PythonAppPodA
+        - OTelCollectorAgentA
+        - NodeExporterA
+
+    PythonAppPodA:
+      Type: Observability::Kubernetes
+      Title: "Python / FastAPI Pod"
+
+    OTelCollectorAgentA:
+      Type: Observability::OpenTelemetry
+      Title: "OTel Collector Agent"
+
+    NodeExporterA:
+      Type: Observability::Prometheus
+      Title: "node-exporter"
+
+    WorkerNodeB:
+      Type: AWS::EC2::Instance
+      Title: "Worker Node B"
+      Direction: vertical
+      Children:
+        - PythonAppPodB
+        - OTelCollectorAgentB
+        - NodeExporterB
+
+    PythonAppPodB:
+      Type: Observability::Kubernetes
+      Title: "Python / FastAPI Pod"
+
+    OTelCollectorAgentB:
+      Type: Observability::OpenTelemetry
+      Title: "OTel Collector Agent"
+
+    NodeExporterB:
+      Type: Observability::Prometheus
+      Title: "node-exporter"
+
+    ObservabilityNamespace:
+      Type: AWS::Diagram::Resource
+      Title: "Observability Namespace"
+      Direction: horizontal
+      Children:
+        - MetricsPods
+        - LogsAndTracesPods
+        - DashboardPods
+
+    MetricsPods:
+      Type: AWS::Diagram::Resource
+      Title: "Metrics / alert pods"
+      Direction: vertical
+      Children:
+        - PrometheusPod
+        - AlertmanagerPod
+        - KubeStateMetricsPod
+
+    PrometheusPod:
+      Type: Observability::Prometheus
+      Title: "Prometheus Pod"
+
+    AlertmanagerPod:
+      Type: Observability::Alertmanager
+      Title: "Alertmanager Pod"
+
+    KubeStateMetricsPod:
+      Type: Observability::Kubernetes
+      Title: "kube-state-metrics Pod"
+
+    LogsAndTracesPods:
+      Type: AWS::Diagram::Resource
+      Title: "Logs / traces pods"
+      Direction: vertical
+      Children:
+        - LokiPod
+        - TempoPod
+
+    LokiPod:
+      Type: Observability::Loki
+      Title: "Loki Pod"
+
+    TempoPod:
+      Type: Observability::Tempo
+      Title: "Tempo Pod"
+
+    DashboardPods:
+      Type: AWS::Diagram::Resource
+      Title: "Dashboard pods"
+      Direction: vertical
+      Children:
+        - GrafanaPod
+
+    GrafanaPod:
+      Type: Observability::Grafana
+      Title: "Grafana Pod"
+
+    OptionalBackends:
+      Type: AWS::Diagram::Resource
+      Title: "Optional external or long-term backends"
+      Direction: horizontal
+      Children:
+        - MimirStorage
+        - Elastic
+        - Jaeger
+        - NotificationTargets
+
+    MimirStorage:
+      Type: AWS::S3::Bucket
+      Title: "Mimir / remote_write"
+
+    Elastic:
+      Type: Observability::Elastic
+      Title: "Elastic / Kibana"
+
+    Jaeger:
+      Type: Observability::Jaeger
+      Title: "Jaeger alternative"
+
+    NotificationTargets:
+      Type: AWS::SNS::Topic
+      Title: "Alert notification targets"

@@ -1,0 +1,87 @@
+Definitions:
+  ObservabilityIconDirectory:
+    Type: Directory
+    Directory:
+      SourceType: file
+      Path: "docs/observability/implementation/assets/icons"
+
+  Observability::Alertmanager:
+    Type: Resource
+    Icon:
+      Source: ObservabilityIconDirectory
+      Path: "alertmanager.png"
+    Label:
+      Title: "Alertmanager"
+      Color: "rgba(0,0,0,255)"
+
+  Observability::Elastic:
+    Type: Resource
+    Icon:
+      Source: ObservabilityIconDirectory
+      Path: "elastic.png"
+    Label:
+      Title: "Elastic"
+      Color: "rgba(0,0,0,255)"
+
+  Observability::Grafana:
+    Type: Resource
+    Icon:
+      Source: ObservabilityIconDirectory
+      Path: "grafana.png"
+    Label:
+      Title: "Grafana"
+      Color: "rgba(0,0,0,255)"
+
+  Observability::Jaeger:
+    Type: Resource
+    Icon:
+      Source: ObservabilityIconDirectory
+      Path: "jaeger.png"
+    Label:
+      Title: "Jaeger"
+      Color: "rgba(0,0,0,255)"
+
+  Observability::Kubernetes:
+    Type: Resource
+    Icon:
+      Source: ObservabilityIconDirectory
+      Path: "kubernetes.png"
+    Label:
+      Title: "Kubernetes"
+      Color: "rgba(0,0,0,255)"
+
+  Observability::Loki:
+    Type: Resource
+    Icon:
+      Source: ObservabilityIconDirectory
+      Path: "loki.png"
+    Label:
+      Title: "Loki"
+      Color: "rgba(0,0,0,255)"
+
+  Observability::OpenTelemetry:
+    Type: Resource
+    Icon:
+      Source: ObservabilityIconDirectory
+      Path: "opentelemetry.png"
+    Label:
+      Title: "OpenTelemetry"
+      Color: "rgba(0,0,0,255)"
+
+  Observability::Prometheus:
+    Type: Resource
+    Icon:
+      Source: ObservabilityIconDirectory
+      Path: "prometheus.png"
+    Label:
+      Title: "Prometheus"
+      Color: "rgba(0,0,0,255)"
+
+  Observability::Tempo:
+    Type: Resource
+    Icon:
+      Source: ObservabilityIconDirectory
+      Path: "tempo.png"
+    Label:
+      Title: "Tempo"
+      Color: "rgba(0,0,0,255)"
