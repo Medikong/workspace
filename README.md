@@ -97,6 +97,7 @@ flowchart LR
 ![k6](https://img.shields.io/badge/k6-7D64FF?style=flat-square&logo=k6&logoColor=white)
 ![Postman](https://img.shields.io/badge/Postman-FF6C37?style=flat-square&logo=postman&logoColor=white)
 ![Newman](https://img.shields.io/badge/Newman-FF6C37?style=flat-square&logo=postman&logoColor=white)
+![SonarQube](https://img.shields.io/badge/SonarQube-4E9BCD?style=flat-square&logo=sonarqube&logoColor=white)
 ![Trivy](https://img.shields.io/badge/Trivy-1904DA?style=flat-square&logo=aqua&logoColor=white)
 
 ## 레포지토리 구조
@@ -118,13 +119,33 @@ medikong/
 
 이번 심화 프로젝트에서는 기본 프로젝트에서 드러난 협업 구조, 배포 검증, 운영 검증의 한계를 개선하고 구체화합니다.
 
-- repo를 `workspace`, `service`, `gitops`, `infra`로 분리해 책임 범위를 명확히 합니다.
-- 공통 인프라 선행 조건을 먼저 정리해 팀원이 같은 기준 위에서 작업하도록 합니다.
-- Docker Compose E2E, Postman/Newman, k6로 서비스 간 흐름과 부하 상황을 검증합니다.
-- GitHub Actions, Docker image, Argo CD 흐름을 분리해 테스트·빌드·배포 단계를 명확히 합니다.
-- secret, Dockerfile, 이미지 취약점 검사를 CI/CD에 통합해 보안을 강화합니다.
-- Prometheus, Grafana, Loki, Tempo, Alertmanager로 운영 상태를 설명할 수 있는 증거를 남깁니다.
-- 서비스 메시, 장애 격리, canary/rollback 같은 고도화 방향을 멘토링에서 점검합니다.
+### 협업 구조 재정비
+
+- `workspace`, `service`, `gitops`, `infra` repo별 책임 범위 분리
+- 공통 인프라 선행 조건 정리
+- 팀원이 같은 기준 위에서 작업할 수 있는 문서 기준점 정리
+
+### 서비스 검증 체계 구체화
+
+- 부하, 인프라, 클러스터, 서비스 단절 상황을 테스트 시나리오 파일로 정의
+- 테스트 시나리오 파일을 자동 실행 가능한 검증 자산으로 관리
+- Docker Compose E2E 기반 서비스 간 흐름 검증
+- Postman/Newman 기반 API 시나리오 검증
+- k6 기반 티켓 오픈 피크와 부하 상황 검증
+
+### 배포와 보안 흐름 분리
+
+- 서비스별 독립 배포 전략과 배포 영향 범위 정리
+- 서비스별 이미지 빌드, 배포 선언, rollout/rollback 기준 분리
+- GitHub Actions 기반 테스트·빌드 단계 분리
+- Docker image build와 Argo CD 배포 흐름 분리
+- secret, Dockerfile, 이미지 취약점 검사 위치 정리
+
+### 운영 관측성 고도화
+
+- Prometheus, Grafana, Loki, Tempo, Alertmanager 기반 운영 증거 확보
+- metric, log, trace, alert를 통한 장애 원인 설명
+- 서비스 메시, 장애 격리, canary/rollback 방향 점검
 
 ## 레퍼런스
 
