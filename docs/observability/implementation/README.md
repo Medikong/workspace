@@ -33,8 +33,8 @@
 | 로그 조회 | 구조화 로그 수집, Loki 또는 Kibana 조회 경로 |
 | Trace 조회 | OpenTelemetry trace context 전파, Tempo 또는 Jaeger backend |
 | 요청/도메인 추적 | `trace_id`, `span_id`, `request_id`, `correlation_id`, `event_id`, `aggregate_id` 로그 필드 |
-| Alert | PrometheusRule 또는 Grafana Alerting/Alertmanager |
-| 대시보드 | Grafana dashboard provisioning |
+| Alert | PrometheusRule CRD, Alertmanager |
+| 대시보드 | Grafana dashboard JSON, ConfigMap provisioning |
 
 ## 기술 스택 후보와 적합성
 
@@ -101,9 +101,12 @@ stdlib logging 기반 설정
 | 항목 | 내용 |
 |---|---|
 | 수집 요구 | 서비스 SLI, 비즈니스 SLI, Pod/Container, Kubernetes 상태 지표를 PromQL로 조회한다.<br>`ServiceMonitor`/`PodMonitor`처럼 scrape 대상을 GitOps로 선언할 수 있어야 한다.<br>단기 운영 대시보드와 alert에 필요한 시계열을 안정적으로 보관한다. |
-| 기술 후보 | Prometheus<br>Prometheus Operator<br>kube-prometheus-stack<br>Mimir 또는 Prometheus remote write 대상 |
-| 적합성 근거 | Prometheus는 Kubernetes와 애플리케이션 metric 수집의 표준 선택지에 가깝고, Grafana 대시보드와 PromQL 기반 alert에 바로 연결된다.<br>Prometheus Operator는 `Prometheus`, `Alertmanager`, `ServiceMonitor`, `PodMonitor`, `PrometheusRule`을 Kubernetes 리소스로 관리할 수 있어 GitOps와 잘 맞는다.<br>`kube-prometheus-stack`은 Prometheus Operator, Prometheus, Alertmanager, Grafana, kube-state-metrics, node-exporter를 함께 다루는 출발점으로 적합하다.<br>Mimir/remote write는 장기 보존과 확장 요구가 생길 때 Prometheus 뒤에 붙일 수 있는 후보라 후속 검토 대상으로 둔다. |
-| 검토 포인트 | Prometheus 단기 보존 기간으로 발표/운영 검증 요구를 충족하는지 확인한다.<br>Prometheus Operator와 Collector의 metric 수집 역할이 겹치지 않게 경계를 정해야 한다.<br>OpenTelemetry metric이 Prometheus로 export될 때 실제 metric 이름이 어떻게 변환되는지 확인해야 한다. |
+| 기본 스택 | `kube-prometheus-stack`을 기본 스택으로 둔다.<br>포함 구성: Prometheus Operator, Prometheus, Alertmanager, Grafana, kube-state-metrics, node-exporter |
+| 구성요소 역할 | Prometheus: metric 수집, 로컬 TSDB 저장, PromQL query를 담당한다.<br>Prometheus Operator: `Prometheus`, `ServiceMonitor`, `PodMonitor`, `PrometheusRule`, `Alertmanager` 같은 운영 리소스를 Kubernetes CRD로 관리한다.<br>Alertmanager: Prometheus alert routing과 notification grouping을 담당한다.<br>Grafana: Prometheus metric dashboard와 alert 시각화를 담당한다.<br>kube-state-metrics: Kubernetes object 상태 지표를 제공한다.<br>node-exporter: Node CPU, memory, disk, filesystem, network 지표를 제공한다. |
+| 확장 옵션 | Mimir 또는 Prometheus remote write 대상은 장기 보존, 여러 Prometheus 통합, 고가용성 query가 필요할 때 붙이는 확장 옵션이다. 기본 스택의 대체재가 아니라 Prometheus 뒤의 장기 저장 계층으로 본다. |
+| 적합성 근거 | `kube-prometheus-stack`은 Kubernetes metric 운영에 필요한 기본 구성요소를 함께 제공하므로 설치 후보를 개별 도구 나열이 아니라 하나의 기본 스택으로 볼 수 있다.<br>Prometheus는 Kubernetes와 애플리케이션 metric 수집의 표준 선택지에 가깝고, Grafana 대시보드와 PromQL 기반 alert에 바로 연결된다.<br>Prometheus Operator는 scrape 대상과 alert rule을 GitOps 리소스로 관리하기 좋다.<br>node-exporter와 kubelet/cAdvisor의 CPU, memory, disk, network 지표는 특정 시점 스냅샷보다 연속 시계열로 봐야 의미가 있으므로 Prometheus 저장 기간과 장기 보존 전략이 중요하다. |
+| 보존 기준 | Prometheus 로컬 TSDB의 기본 보존 기간은 별도 설정이 없으면 15일이다.<br>15일은 최근 장애 분석과 단기 대시보드에는 쓸 수 있지만, 요일별/시간대별 부하 패턴을 비교하기에는 여유가 부족하다.<br>운영 분석 기준으로 최소 30일, 주간 패턴 비교와 월간 추세 확인까지 보려면 90일 이상 보존을 목표로 둔다.<br>Prometheus 로컬 보존만 늘리면 디스크와 cardinality 부담이 커지므로, 장기 보존은 Mimir 또는 remote write 계층을 붙이는 방향으로 검토한다. |
+| 검토 포인트 | Prometheus Operator와 Collector의 metric 수집 역할이 겹치지 않게 경계를 정해야 한다.<br>OpenTelemetry metric이 Prometheus로 export될 때 실제 metric 이름이 어떻게 변환되는지 확인해야 한다.<br>장기 보존 대상은 모든 metric이 아니라 서비스 SLI, 비즈니스 SLI, Pod/Node 자원 사용량, Kubernetes 상태처럼 추세 분석 가치가 있는 metric부터 우선한다. |
 
 ### Kubernetes와 인프라 지표
 
@@ -137,9 +140,11 @@ stdlib logging 기반 설정
 | 항목 | 내용 |
 |---|---|
 | 수집 요구 | 요청량, 에러율, 응답시간, 주문 처리량, 결제 성공률, 중복 주문, CPU/Memory, Ready/Restart를 한 화면에서 본다.<br>임계치 초과 시 패널 색상과 alert가 바뀐다.<br>alert rule이 코드 또는 manifest로 관리되어야 한다. |
-| 기술 후보 | Grafana<br>Alertmanager<br>PrometheusRule<br>Grafana Alerting |
-| 적합성 근거 | Grafana는 Prometheus, Loki, Tempo datasource를 한 화면에서 연결할 수 있어 metric/log/trace drilldown에 적합하다.<br>Alertmanager는 PrometheusRule 기반 alert와 잘 맞고 Kubernetes 운영 사례가 많다.<br>Grafana Alerting은 dashboard와 alert를 같은 UI에서 관리할 수 있지만 GitOps 관리 방식은 별도 검토가 필요하다. |
-| 검토 포인트 | alert rule 위치를 PrometheusRule로 둘지 Grafana Alerting으로 둘지 정해야 한다.<br>dashboard provisioning과 datasource 설정을 GitOps로 관리할 수 있는지 확인한다.<br>비즈니스 지표 alert는 장애성 실패와 의도된 거절을 섞지 않도록 `result`, `failure_kind`, `expected` 기준을 명확히 해야 한다. |
+| Dashboard 관리 | Grafana dashboard JSON을 GitOps repo에서 관리한다.<br>Grafana dashboard ConfigMap provisioning 또는 kube-prometheus-stack dashboard sidecar로 자동 반영한다.<br>dashboard UID와 datasource UID/name을 고정해 링크와 drilldown이 흔들리지 않게 한다. |
+| Alert 관리 | 에러율, 응답 지연, Pod CrashLoop 알림은 `PrometheusRule` CRD로 정의한다.<br>Prometheus Operator가 `PrometheusRule`을 Prometheus alert rule로 로드한다.<br>Alertmanager가 routing, grouping, notification을 담당한다. |
+| 적합성 근거 | Grafana는 Prometheus, Loki, Tempo datasource를 한 화면에서 연결할 수 있어 metric/log/trace drilldown에 적합하다.<br>`PrometheusRule`은 alert rule을 Kubernetes manifest로 관리할 수 있어 GitOps 요구와 맞는다.<br>Alertmanager는 Prometheus alert의 routing과 notification을 담당하므로 `PrometheusRule` 기반 알림과 자연스럽게 연결된다. |
+| 제외 기준 | Grafana Alerting은 이번 기본 후보에서 제외한다. 요구사항이 `PrometheusRule` CRD를 명시하므로 alert rule의 기준 위치를 Prometheus/GitOps manifest로 고정한다. |
+| 주의 기준 | 비즈니스 지표 alert는 장애성 실패와 의도된 거절을 섞지 않도록 `result`, `failure_kind`, `expected` 기준을 명확히 해야 한다.<br>Dashboard query와 PrometheusRule query가 서로 다른 계산식을 쓰지 않도록 공통 PromQL 기준을 문서화한다. |
 
 ## 스택 조합 관점
 
@@ -311,7 +316,7 @@ correlation_id: 도메인 이벤트 체인
 | Ready/Restart | kube-state-metrics |
 | Consumer lag/DLQ | Kafka exporter 또는 앱 metric |
 
-Alert 후보:
+PrometheusRule 알림 후보:
 
 | Alert | 기준 |
 |---|---|
@@ -319,6 +324,7 @@ Alert 후보:
 | p95 latency | 5분 동안 SLO 초과 |
 | 결제 성공률 | 5분 동안 95% 미만 |
 | 중복 주문 확정 | `duplicate_order_committed_total` 증가 시 즉시 확인 |
+| Pod CrashLoopBackOff | 5분 이상 지속 |
 | Pod restart | 10분 동안 증가 |
 | Ready false | 5분 이상 지속 |
 | Prometheus scrape error | target down 또는 scrape 실패 지속 |
@@ -350,11 +356,13 @@ Alert 후보:
 - Prometheus Operator ServiceMonitor/PodMonitor API: https://prometheus-operator.dev/docs/api-reference/api/
 - prometheus-community kube-prometheus-stack chart: https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack
 - kube-state-metrics pod metrics: https://github.com/kubernetes/kube-state-metrics/blob/main/docs/metrics/workload/pod-metrics.md
+- Prometheus storage retention: https://prometheus.io/docs/prometheus/latest/storage/
 - OpenTelemetry HTTP metrics semantic conventions: https://opentelemetry.io/docs/specs/semconv/http/http-metrics/
 - OpenTelemetry Python instrumentation: https://opentelemetry.io/docs/zero-code/python/
 - Kubernetes logging architecture: https://kubernetes.io/docs/concepts/cluster-administration/logging/
 - OpenTelemetry Collector Helm chart for Kubernetes: https://opentelemetry.io/docs/platforms/kubernetes/helm/collector/
 - OpenTelemetry Collector Kubernetes components: https://opentelemetry.io/docs/platforms/kubernetes/collector/components/
+- Grafana provisioning: https://grafana.com/docs/grafana/latest/administration/provisioning/
 - Grafana Loki Helm install: https://grafana.com/docs/loki/latest/setup/install/helm/
 - Grafana Tempo Helm chart: https://grafana.com/docs/tempo/latest/setup/helm-chart/
 - Grafana Tempo trace-to-logs: https://grafana.com/docs/grafana/latest/datasources/tempo/configure-tempo-data-source/configure-trace-to-logs/
