@@ -23,11 +23,11 @@ related:
   - docs/projects_plan/reference/AWS_INFRA_SIZING.md
   - docs/project_docs/04-scenarios/S9-canary-deployment.md
   - docs/project_docs/04-scenarios/S10-canary-rollback.md
-  - docs/observability/metrics/README.md
+  - docs/architecture/observability/metrics/README.md
 links: []
 ---
 
-# 2026-06-02 AWS 인프라 질문
+# 2026-06-02 멘토링 질문
 
 ## 목적
 
