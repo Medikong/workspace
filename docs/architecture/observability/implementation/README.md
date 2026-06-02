@@ -3,6 +3,7 @@
 관련 문서:
 
 - 지표 수집 기준: `../metrics/README.md`
+- 구현 로드맵: `ROADMAP.md`
 - workspace#8: https://github.com/Medikong/workspace/issues/8
 - workspace#13: https://github.com/Medikong/workspace/issues/13
 - gitops#4: https://github.com/Medikong/gitops/issues/4

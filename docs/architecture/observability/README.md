@@ -4,6 +4,7 @@
 
 - 지표 정의와 수집 기준: `metrics/README.md`
 - 기술 스택과 구현 조사: `implementation/README.md`
+- 구현 로드맵: `implementation/ROADMAP.md`
 - 아키텍처 다이어그램 원본: `implementation/observability-architecture.aws.dac.yaml`
 
 ## 아키텍처 이미지
@@ -81,4 +82,12 @@ Prometheus
 |---|---|
 | Worker Node | 서비스 Pod, OTel Collector Agent, node-exporter가 위치한다. |
 | Observability namespace | Prometheus, Alertmanager, Loki, Tempo, Grafana가 위치한다. |
-| Optional backends | Mimir, Elastic/Kibana, Jaeger는 필요할 때 붙이는 확장 후보로 둔다. |
+| Optional backends | Mimir, Jaeger는 필요할 때 붙이는 확장 후보로 둔다. |
+
+## 감사 로그와의 관계
+
+고객 문의 대응, 업무 이력 조회, 특정 ID 기반 조건 검색은 감사 로그 아키텍처에서 다룬다.
+
+- 감사 로그 아키텍처: `../audit-logs/README.md`
+
+이 문서는 시스템 운용을 위한 metric, log, trace, alert만 다룬다.
