@@ -3,7 +3,7 @@ Definitions:
     Type: Directory
     Directory:
       SourceType: file
-      Path: "docs/observability/implementation/assets/icons"
+      Path: "docs/architecture/observability/implementation/assets/icons"
 
   Observability::Alertmanager:
     Type: Resource

@@ -152,5 +152,6 @@ medikong/
 - workspace 설치, 빠른 시작, 명령, 기준 파일, 실행 환경, 비목표: [docs/references/workspace.md](docs/references/workspace.md)
 - 신규 참여자 첫 실행 흐름: [docs/onboarding/quickstart.md](docs/onboarding/quickstart.md)
 - repo별 책임 경계: [docs/architecture/repo-boundaries.md](docs/architecture/repo-boundaries.md)
+- 관측성 아키텍처: [docs/architecture/observability/README.md](docs/architecture/observability/README.md)
 - workspace 역할 결정 기록: [docs/adr/0001-use-workspace-as-polyrepo-helper.md](docs/adr/0001-use-workspace-as-polyrepo-helper.md)
 - 프로젝트 목표: [docs/project_docs/00-GOAL.md](docs/project_docs/00-GOAL.md)

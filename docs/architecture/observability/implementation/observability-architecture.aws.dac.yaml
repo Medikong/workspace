@@ -3,7 +3,7 @@ Diagram:
     - Type: URL
       Url: "https://raw.githubusercontent.com/awslabs/diagram-as-code/main/definitions/definition-for-aws-icons-light.yaml"
     - Type: LocalFile
-      LocalFile: "docs/observability/implementation/observability-icons.aws.def.yaml"
+      LocalFile: "docs/architecture/observability/implementation/observability-icons.aws.def.yaml"
 
   Resources:
     Canvas:
