@@ -8,6 +8,8 @@ areas:
   - planning
   - observability
   - gitops
+  - service-mesh
+  - istio
 repos:
   - workspace
   - gitops
@@ -16,6 +18,7 @@ related:
   - docs/project_docs/00-GOAL.md
   - docs/architecture/observability/
   - docs/architecture/observability/metrics/README.md
+  - docs/adr/0003-separate-kong-edge-gateway-and-istio-service-mesh.md
 links:
   - https://github.com/Medikong/workspace/issues/8
   - https://github.com/Medikong/workspace/issues/13
@@ -41,12 +44,14 @@ links:
 | `workspace#8` 지표 정의와 수집 작업 이어서 진행 | 관측성 담당 | https://github.com/Medikong/workspace/issues/8 | 진행 중 |
 | 어떤 서비스에서 어떤 지표를 볼지 조사 | 관측성 담당 | `docs/architecture/observability/metrics/README.md` | 진행 중 |
 | Prometheus, ServiceMonitor, `/metrics` 수집 경로 정리 | 관측성 담당 | `docs/architecture/observability/`, https://github.com/Medikong/gitops/issues/4 | todo |
+| Service Mesh와 Istio 담당 작업 정리 | 명수님 | `docs/adr/0003-separate-kong-edge-gateway-and-istio-service-mesh.md` | 진행 중 |
 
 ## 결정 사항
 
 | 결정 | 이유 | 연결 문서 |
 | --- | --- | --- |
 | 관측성 작업은 `workspace#8` 지표 정의와 수집 범위부터 정리한다. | 무엇을 수집할지 먼저 잡아야 Prometheus와 ServiceMonitor 설정도 같은 기준으로 맞출 수 있다. | https://github.com/Medikong/workspace/issues/8 |
+| 명수님은 Service Mesh와 Istio 담당 작업을 맡는다. | Kong과 Istio의 역할을 나누고, 내부 서비스 간 트래픽 제어와 mesh 적용 범위를 따로 정리해야 한다. | `docs/adr/0003-separate-kong-edge-gateway-and-istio-service-mesh.md` |
 
 ## 후속 정리 필요
 
