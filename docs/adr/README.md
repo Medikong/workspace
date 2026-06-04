@@ -20,6 +20,7 @@ ADR은 Architecture Decision Record의 약자로, 중요한 결정을 당시의 
 | ADR-0002 | accepted | 2026-05-27 | 로컬 Kubernetes 검증은 Docker Desktop을 기준으로 한다 | `0002-use-docker-desktop-for-local-kubernetes-validation.md` |
 | ADR-0003 | accepted | 2026-05-29 | Kong은 Edge API Gateway로, Istio는 내부 Service Mesh로 분리한다 | `0003-separate-kong-edge-gateway-and-istio-service-mesh.md` |
 | ADR-0004 | accepted | 2026-06-04 | 관측성 신호별 수집 경로와 Trace 처리 기준을 분리한다 | `0004-observability-signal-routing-and-trace.md` |
+| ADR-0005 | accepted | 2026-06-04 | GitHub Actions의 AWS 인증은 OIDC 기반 IAM Role Assume을 사용한다 | `0005-use-github-oidc-for-aws-ci-authentication.md` |
 
 ## Frontmatter
 
