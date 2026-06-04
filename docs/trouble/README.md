@@ -16,6 +16,7 @@
 
 | ID | 상태 | 우선순위 | 영역 | 제목 | 파일 |
 | --- | --- | --- | --- | --- | --- |
+| TROUBLE-001 | triaged | p1 | observability | aws-dev 관측성 배포 EBS StorageClass 부재 | [2026-06-04-aws-dev-observability-storageclass-pending.md](2026-06-04-aws-dev-observability-storageclass-pending.md) |
 
 새 트러블을 추가하면 위 표에 한 줄을 추가한다. 해결된 기록도 삭제하지 않고 `status: closed`로 유지한다.
 
