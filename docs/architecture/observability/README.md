@@ -3,6 +3,9 @@
 관련 문서:
 
 - 지표 정의와 수집 기준: `metrics/README.md`
+- Trace 수집 경로와 repo 책임: `tracing/README.md`
+- Tempo/Grafana 조회 기준: `tracing/tempo-grafana-query.md`
+- Trace sampling과 retention 기준: `tracing/sampling-retention.md`
 - 기술 스택과 구현 조사: `implementation/README.md`
 - 구현 로드맵: `implementation/ROADMAP.md`
 - 아키텍처 다이어그램 원본: `implementation/observability-architecture.aws.dac.yaml`
