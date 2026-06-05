@@ -1,5 +1,7 @@
 # Medikong workspace
 
+![Ticketmong banner](assets/ticketmong-banner-text.png)
+
 ## 프로젝트 주제
 
 ```
@@ -13,6 +15,8 @@
 - Kubernetes, Kong, Istio, Helm, Argo CD로 배포·트래픽 제어·서비스 메시를 검증합니다.
 - Prometheus, Grafana, Loki, Tempo, Alertmanager로 장애 원인과 병목을 추적합니다.
 
+### 핵심 흐름
+
 ```mermaid
 flowchart LR
     A((티켓 오픈<br/>트래픽 피크))
@@ -24,6 +28,12 @@ flowchart LR
 
     A --> B --> C --> D --> E --> F --> A
 ```
+
+![티켓 예매부터 결제까지 주요 여정](assets/ticketmong-key-process.png)
+
+### 주요 화면
+
+![Ticketmong 주요 화면](assets/ticketmong-key-screens.png)
 
 ## 목표
 
