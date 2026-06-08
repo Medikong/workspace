@@ -94,9 +94,13 @@ gitops/values/services/notification.yaml
 
 ```yaml
 deployment:
+  podLabels:
+    sidecar.istio.io/inject: "true"
   podAnnotations:
     sidecar.istio.io/inject: "true"
 ```
+
+`podLabels`는 Istio sidecar injector webhook의 `objectSelector`가 실제로 매칭하기 위해 필요하다. `podAnnotations`는 webhook이 호출된 뒤 injector에게 주는 명시적인 opt-in 의도다.
 
 ## 검증 명령
 
