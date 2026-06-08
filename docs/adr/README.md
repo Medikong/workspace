@@ -23,6 +23,7 @@ ADR은 Architecture Decision Record의 약자로, 중요한 결정을 당시의 
 | ADR-0005 | accepted | 2026-06-04 | GitHub Actions의 AWS 인증은 OIDC 기반 IAM Role Assume을 사용한다 | `0005-use-github-oidc-for-aws-ci-authentication.md` |
 | ADR-0006 | accepted | 2026-06-08 | 서비스 간 Circuit Breaker는 Istio outlierDetection으로 시작한다 | `0006-use-istio-outlierdetection-for-mesh-circuit-breaker.md` |
 | ADR-0007 | accepted | 2026-06-08 | Istio 설치와 서비스 트래픽 정책은 ArgoCD Application으로 분리한다 | `0007-separate-istio-platform-and-traffic-policy-sync.md` |
+| ADR-0008 | accepted | 2026-06-08 | Istio mTLS STRICT는 mesh 내부부터 단계적으로 적용한다 | `0008-stage-istio-mtls-strict-rollout.md` |
 
 ## Frontmatter
 
