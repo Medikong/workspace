@@ -98,9 +98,15 @@ deployment:
     sidecar.istio.io/inject: "true"
   podAnnotations:
     sidecar.istio.io/inject: "true"
+    sidecar.istio.io/proxyCPU: 25m
+    sidecar.istio.io/proxyMemory: 64Mi
+    sidecar.istio.io/proxyCPULimit: 200m
+    sidecar.istio.io/proxyMemoryLimit: 256Mi
 ```
 
 `podLabels`는 Istio sidecar injector webhook의 `objectSelector`가 실제로 매칭하기 위해 필요하다. `podAnnotations`는 webhook이 호출된 뒤 injector에게 주는 명시적인 opt-in 의도다.
+
+proxy resource annotation은 AWS dev 클러스터에서 rollout이 CPU request 부족으로 멈추지 않도록 낮게 잡은 값이다. 운영 기준값은 Envoy CPU/메모리 metric을 보고 별도로 재산정해야 한다.
 
 ## 검증 명령
 
