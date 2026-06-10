@@ -72,6 +72,8 @@ aws-dev 클러스터에 Argo CD는 설치되어 있었지만, `Medikong/gitops` 
 
 해결 방향은 aws-dev 클러스터에 EBS 기반 동적 volume provisioning을 정식 platform 구성으로 추가하는 것이다. 수동 PV나 임시 local-path provisioner로 우회하지 않고, EBS CSI Driver와 `gp3` StorageClass를 GitOps 관리 대상으로 둔다.
 
+다만 EBS를 Loki/Tempo의 최종 장기 저장소로 보지는 않는다. EBS는 Kubernetes Pod가 붙는 노드/AZ와 가까운 block storage라 WAL, cache, compaction 작업공간, 초기 단일 구성의 PVC 해소에 적합하다. 분산 구성과 장기 보관까지 고려하면 Loki/Tempo의 영속 데이터는 S3 object storage로 보내고, EBS는 임시 작업공간에 가깝게 제한하는 구조가 맞다.
+
 필요한 작업 경계는 다음과 같다.
 
 - `infra`: aws-dev node IAM role 또는 instance profile에 EBS CSI가 EBS volume을 생성, attach, detach, 삭제할 수 있는 권한을 부여한다.
@@ -79,6 +81,7 @@ aws-dev 클러스터에 Argo CD는 설치되어 있었지만, `Medikong/gitops` 
 - `gitops`: 기본 `gp3` StorageClass YAML을 추가하고 Argo CD가 관리하게 한다.
 - `gitops`: EBS CSI Driver와 StorageClass가 Tempo/Loki보다 먼저 sync되도록 sync wave를 조정한다.
 - `gitops`: 기존 Pending PVC를 재생성하거나 재바인딩해 `storage-loki-0`, `storage-tempo-0`이 Bound 되는지 확인한다.
+- `infra`/`gitops`: Loki/Tempo 장기 보관 backend를 S3로 전환하기 위한 bucket, 권한, Helm values 설계를 별도 후속 작업으로 잡는다.
 
 완료 기준은 `storage-loki-0`, `storage-tempo-0` PVC가 Bound 되고, `loki-0`, `tempo-0` Pod가 Running 상태가 되며, `loki-aws-dev`, `tempo-aws-dev` Application이 Healthy로 전환되는 것이다.
 
@@ -97,6 +100,8 @@ flowchart TD
     TempoPVC --> Missing["StorageClass 없음<br/>EBS CSI 미구성"]
     LokiPVC --> Missing
     Missing --> Needed["필요 기반<br/>EBS CSI Driver + gp3 StorageClass"]
+    Needed --> ShortTerm["단기<br/>PVC Pending 해소"]
+    Needed --> LongTerm["중기<br/>S3 장기 보관 전환"]
 ```
 
 ### 확인 내용
@@ -120,6 +125,7 @@ flowchart TD
 
 - `infra`: EC2 node IAM role 또는 instance profile에 EBS CSI가 필요한 AWS 권한을 부여한다.
 - `gitops`: EBS CSI Driver Helm Application과 `gp3` StorageClass를 YAML로 선언하고 Argo CD가 관리하게 한다.
+- `infra`/`gitops`: 장기 보관 데이터는 S3로 분리하고, EBS는 Loki/Tempo의 WAL, cache, compaction 작업공간 또는 초기 검증용 PVC로 제한하는 방향을 후속 설계한다.
 - `workspace`: 현재 트러블 상태와 의사결정, 후속 작업 경계를 기록한다.
 
 ## 후속 작업
@@ -134,7 +140,8 @@ flowchart TD
 | todo | `gp3` StorageClass YAML을 GitOps 관리 대상으로 추가 | gitops |  |
 | todo | 기존 Pending PVC 재생성 또는 재바인딩 절차 결정 | gitops |  |
 | todo | Loki/Tempo Pod Running, Application Healthy 검증 | gitops |  |
+| todo | Loki/Tempo 장기 보관 backend를 S3로 전환하는 설계 작성 | infra/gitops |  |
 
 ## 해결 상태
 
-미해결. EBS CSI Driver와 기본 StorageClass가 준비된 뒤 `storage-loki-0`, `storage-tempo-0` PVC가 Bound되고 `loki-0`, `tempo-0` Pod가 Running 상태가 되는지 확인해야 한다.
+미해결. EBS CSI Driver와 기본 StorageClass가 준비된 뒤 `storage-loki-0`, `storage-tempo-0` PVC가 Bound되고 `loki-0`, `tempo-0` Pod가 Running 상태가 되는지 확인해야 한다. 이후 분산 구성과 장기 보관 요구가 확정되면 Loki/Tempo의 영속 데이터 backend를 S3로 전환한다.
