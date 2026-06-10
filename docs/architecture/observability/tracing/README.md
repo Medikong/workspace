@@ -4,15 +4,15 @@
 
 ## 트레이스 전체 과정
 
-클라이언트가 있다고 가정하면 사용자 예매 행동 하나에는 시스템 관측성 ID와 감사 로그 ID가 함께 생긴다. 큰 그림으로 보면 프론트엔드에서 시작된 요청이 인그레스를 지나 백엔드 MSA와 메시징 구간으로 이어지고, 그 과정의 신호가 관측성 인프라와 감사 로그 인프라로 나뉘어 저장된다.
+클라이언트가 있다고 가정하면 사용자 예매 행동 하나에는 시스템 관측성 ID와 감사 로그 ID가 함께 생긴다. 큰 그림으로 보면 프론트엔드에서 시작된 요청이 인그레스를 지나 백엔드 MSA와 메시징 구간으로 이어지고, 그 과정의 신호가 관측성 인프라와 감사 로그 인프라로 나뉘어 저장된다. 현재 구조에서는 프론트엔드가 여러 MSA를 직접 호출하므로, 첫 요청에 `traceparent`가 없으면 서버 경계에서 새 trace를 만들고 응답 header로 돌려준다. 프론트엔드는 같은 사용자 흐름 안의 후속 요청에 그 `traceparent`를 릴레이한다.
 
 화살표 번호는 대표 성공 흐름의 읽는 순서다. 점선은 순차 처리 단계가 아니라 각 서비스가 함께 참조하는 업무 ID를 뜻한다.
 
 ```mermaid
 flowchart LR
     subgraph Frontend["Frontend / 프론트엔드"]
-        UserAction["사용자 예매 행동<br/>client_action_id = 7f621e41-9a66-4df4-9f2f-8c0f831d0f26<br/>user_id = 9d1b5db4-7f45-4d0c-9a31-43f62fd5d3ab"]
-        Client["client<br/>trace_id = 4f3b2c1a9d8e7f60123456789abcdef0<br/>traceparent header"]
+        UserAction["사용자 예매 행동<br/>user_id = 9d1b5db4-7f45-4d0c-9a31-43f62fd5d3ab"]
+        Client["client<br/>traceparent cache<br/>trace_id = 4f3b2c1a9d8e7f60123456789abcdef0"]
     end
 
     subgraph Ingress["Ingress / Gateway"]
@@ -43,7 +43,7 @@ flowchart LR
 
     UserAction -->|"1. 사용자 행동 시작"| Client
 
-    Client -->|"2. HTTP 호출<br/>traceparent"| Kong
+    Client -->|"2. HTTP 호출<br/>traceparent optional"| Kong
     Kong -->|"3. 예약 요청 전달<br/>POST /reservations<br/>request_id = 0e6f2b3d-5f89-4b77-98d8-0ecab7359181"| Reservation
     Kong -->|"8. 결제 요청 전달<br/>POST /payments<br/>request_id = 4a1f6c99-a1f6-4959-b4d6-3ec10bb74a2a"| Payment
 
@@ -115,7 +115,6 @@ flowchart LR
       "span_id": "6f1a2b3c4d5e6f70",
       "request_id": "0e6f2b3d-5f89-4b77-98d8-0ecab7359181",
       "correlation_id": "2d2f6c42-1df5-4d3b-b9f3-c2b2253b63b8",
-      "client_action_id": "7f621e41-9a66-4df4-9f2f-8c0f831d0f26",
       "user_id": "9d1b5db4-7f45-4d0c-9a31-43f62fd5d3ab",
       "actor_type": "customer",
       "resource": {
@@ -137,7 +136,6 @@ flowchart LR
       "span_id": "8a9b0c1d2e3f4051",
       "request_id": "4a1f6c99-a1f6-4959-b4d6-3ec10bb74a2a",
       "correlation_id": "2d2f6c42-1df5-4d3b-b9f3-c2b2253b63b8",
-      "client_action_id": "7f621e41-9a66-4df4-9f2f-8c0f831d0f26",
       "user_id": "9d1b5db4-7f45-4d0c-9a31-43f62fd5d3ab",
       "actor_type": "customer",
       "resource": {
@@ -158,7 +156,6 @@ flowchart LR
       "trace_id": "4f3b2c1a9d8e7f60123456789abcdef0",
       "span_id": "1f2e3d4c5b6a7980",
       "correlation_id": "2d2f6c42-1df5-4d3b-b9f3-c2b2253b63b8",
-      "client_action_id": "7f621e41-9a66-4df4-9f2f-8c0f831d0f26",
       "user_id": "9d1b5db4-7f45-4d0c-9a31-43f62fd5d3ab",
       "actor_type": "system",
       "resource": {
@@ -179,7 +176,6 @@ flowchart LR
       "trace_id": "4f3b2c1a9d8e7f60123456789abcdef0",
       "span_id": "9c8b7a6d5e4f3210",
       "correlation_id": "2d2f6c42-1df5-4d3b-b9f3-c2b2253b63b8",
-      "client_action_id": "7f621e41-9a66-4df4-9f2f-8c0f831d0f26",
       "user_id": "9d1b5db4-7f45-4d0c-9a31-43f62fd5d3ab",
       "actor_type": "system",
       "resource": {
@@ -212,29 +208,31 @@ sequenceDiagram
     participant Audit as Elasticsearch/Kibana
 
     User->>Client: 좌석 선택 후 예매 진행
-    Note over Client: user_id = 9d1b5db4-7f45-4d0c-9a31-43f62fd5d3ab<br/>client_action_id = 7f621e41-9a66-4df4-9f2f-8c0f831d0f26<br/>trace_id = 4f3b2c1a9d8e7f60123456789abcdef0
+    Note over Client: user_id = 9d1b5db4-7f45-4d0c-9a31-43f62fd5d3ab<br/>traceparent 없음<br/>첫 응답 이후 traceparent 저장
 
-    Client->>Kong: POST /reservations<br/>Authorization: JWT(9d1b5db4-7f45-4d0c-9a31-43f62fd5d3ab)<br/>traceparent = 4f3b2c1a9d8e7f60123456789abcdef0
-    Note over Kong: request_id = 0e6f2b3d-5f89-4b77-98d8-0ecab7359181<br/>trace_id = 4f3b2c1a9d8e7f60123456789abcdef0 유지
-    Kong->>Reservation: POST /reservations<br/>X-Request-Id = 0e6f2b3d-5f89-4b77-98d8-0ecab7359181<br/>X-User-Id = 9d1b5db4-7f45-4d0c-9a31-43f62fd5d3ab<br/>traceparent = 4f3b2c1a9d8e7f60123456789abcdef0
+    Client->>Kong: POST /reservations<br/>Authorization: JWT(9d1b5db4-7f45-4d0c-9a31-43f62fd5d3ab)<br/>traceparent 없음
+    Note over Kong: request_id = 0e6f2b3d-5f89-4b77-98d8-0ecab7359181<br/>trace_id = 4f3b2c1a9d8e7f60123456789abcdef0 생성
+    Kong->>Reservation: POST /reservations<br/>X-Request-Id = 0e6f2b3d-5f89-4b77-98d8-0ecab7359181<br/>X-User-Id = 9d1b5db4-7f45-4d0c-9a31-43f62fd5d3ab<br/>traceparent = 00-4f3b2c1a9d8e7f60123456789abcdef0-aa11bb22cc33dd44-01
     Note over Reservation: service.name = reservation-service<br/>span_id = 6f1a2b3c4d5e6f70<br/>reservation_id = 0f8fad5b-d9cb-469f-a165-70867728950e<br/>correlation_id = 2d2f6c42-1df5-4d3b-b9f3-c2b2253b63b8
     Reservation-->>Tempo: span<br/>trace_id = 4f3b2c1a9d8e7f60123456789abcdef0<br/>request_id = 0e6f2b3d-5f89-4b77-98d8-0ecab7359181<br/>service.name = reservation-service
     Reservation-->>Audit: audit event<br/>event_id = 76db2f8f-2f24-4f7a-b7da-ff6c4c3c1f2e<br/>event_type = seat_hold_succeeded<br/>user_id = 9d1b5db4-7f45-4d0c-9a31-43f62fd5d3ab<br/>reservation_id = 0f8fad5b-d9cb-469f-a165-70867728950e<br/>request_id = 0e6f2b3d-5f89-4b77-98d8-0ecab7359181<br/>trace_id = 4f3b2c1a9d8e7f60123456789abcdef0
-    Reservation-->>Kafka: reservation-created<br/>event_id = c4d59d4a-7318-4b41-9a12-df1d1e4f1f10<br/>correlation_id = 2d2f6c42-1df5-4d3b-b9f3-c2b2253b63b8<br/>traceparent = 4f3b2c1a9d8e7f60123456789abcdef0
+    Reservation-->>Kafka: reservation-created<br/>event_id = c4d59d4a-7318-4b41-9a12-df1d1e4f1f10<br/>correlation_id = 2d2f6c42-1df5-4d3b-b9f3-c2b2253b63b8<br/>traceparent = 00-4f3b2c1a9d8e7f60123456789abcdef0-6f1a2b3c4d5e6f70-01
+    Reservation-->>Client: 201 Created<br/>traceparent = 00-4f3b2c1a9d8e7f60123456789abcdef0-6f1a2b3c4d5e6f70-01<br/>X-Trace-Id = 4f3b2c1a9d8e7f60123456789abcdef0
+    Note over Client: 같은 예매 흐름의 후속 요청에 traceparent 저장값 사용
 
-    Client->>Kong: POST /payments<br/>reservation_id = 0f8fad5b-d9cb-469f-a165-70867728950e<br/>traceparent = 4f3b2c1a9d8e7f60123456789abcdef0
+    Client->>Kong: POST /payments<br/>reservation_id = 0f8fad5b-d9cb-469f-a165-70867728950e<br/>traceparent = 00-4f3b2c1a9d8e7f60123456789abcdef0-6f1a2b3c4d5e6f70-01
     Note over Kong: request_id = 4a1f6c99-a1f6-4959-b4d6-3ec10bb74a2a<br/>trace_id = 4f3b2c1a9d8e7f60123456789abcdef0 유지
-    Kong->>Payment: POST /payments<br/>X-Request-Id = 4a1f6c99-a1f6-4959-b4d6-3ec10bb74a2a<br/>X-User-Id = 9d1b5db4-7f45-4d0c-9a31-43f62fd5d3ab<br/>traceparent = 4f3b2c1a9d8e7f60123456789abcdef0
+    Kong->>Payment: POST /payments<br/>X-Request-Id = 4a1f6c99-a1f6-4959-b4d6-3ec10bb74a2a<br/>X-User-Id = 9d1b5db4-7f45-4d0c-9a31-43f62fd5d3ab<br/>traceparent = 00-4f3b2c1a9d8e7f60123456789abcdef0-bb22cc33dd44ee55-01
     Note over Payment: service.name = payment-service<br/>span_id = 8a9b0c1d2e3f4051<br/>payment_id = 7c9e6679-7425-40de-944b-e07fc1f90ae7<br/>correlation_id = 2d2f6c42-1df5-4d3b-b9f3-c2b2253b63b8
     Payment-->>Tempo: span<br/>trace_id = 4f3b2c1a9d8e7f60123456789abcdef0<br/>request_id = 4a1f6c99-a1f6-4959-b4d6-3ec10bb74a2a<br/>service.name = payment-service
     Payment-->>Audit: audit event<br/>event_id = 9bba1c9e-2e8e-4f6d-8b2d-b8ac1f8a89fb<br/>event_type = payment_approved<br/>user_id = 9d1b5db4-7f45-4d0c-9a31-43f62fd5d3ab<br/>reservation_id = 0f8fad5b-d9cb-469f-a165-70867728950e<br/>payment_id = 7c9e6679-7425-40de-944b-e07fc1f90ae7<br/>request_id = 4a1f6c99-a1f6-4959-b4d6-3ec10bb74a2a<br/>trace_id = 4f3b2c1a9d8e7f60123456789abcdef0
-    Payment-->>Kafka: payment-approved<br/>event_id = 6b7f4d9c-5a58-4ad4-9150-8d3d2a5f6c21<br/>event_type = payment-approved<br/>correlation_id = 2d2f6c42-1df5-4d3b-b9f3-c2b2253b63b8<br/>traceparent = 4f3b2c1a9d8e7f60123456789abcdef0
+    Payment-->>Kafka: payment-approved<br/>event_id = 6b7f4d9c-5a58-4ad4-9150-8d3d2a5f6c21<br/>event_type = payment-approved<br/>correlation_id = 2d2f6c42-1df5-4d3b-b9f3-c2b2253b63b8<br/>traceparent = 00-4f3b2c1a9d8e7f60123456789abcdef0-8a9b0c1d2e3f4051-01
 
-    Kafka->>Ticket: consume payment-approved<br/>traceparent = 4f3b2c1a9d8e7f60123456789abcdef0<br/>correlation_id = 2d2f6c42-1df5-4d3b-b9f3-c2b2253b63b8
+    Kafka->>Ticket: consume payment-approved<br/>traceparent = 00-4f3b2c1a9d8e7f60123456789abcdef0-8a9b0c1d2e3f4051-01<br/>correlation_id = 2d2f6c42-1df5-4d3b-b9f3-c2b2253b63b8
     Note over Ticket: service.name = ticket-service<br/>span_id = 1f2e3d4c5b6a7980<br/>ticket_id = 550e8400-e29b-41d4-a716-446655440000
     Ticket-->>Tempo: consumer span<br/>trace_id = 4f3b2c1a9d8e7f60123456789abcdef0<br/>service.name = ticket-service
     Ticket-->>Audit: audit event<br/>event_id = 4939f07f-30c0-47f4-8cdb-9f07d25d67a5<br/>event_type = ticket_issued<br/>user_id = 9d1b5db4-7f45-4d0c-9a31-43f62fd5d3ab<br/>reservation_id = 0f8fad5b-d9cb-469f-a165-70867728950e<br/>payment_id = 7c9e6679-7425-40de-944b-e07fc1f90ae7<br/>ticket_id = 550e8400-e29b-41d4-a716-446655440000<br/>trace_id = 4f3b2c1a9d8e7f60123456789abcdef0
-    Ticket-->>Kafka: ticket-issued<br/>event_id = 2a3b4c5d-6e7f-4890-9123-456789abcdef<br/>correlation_id = 2d2f6c42-1df5-4d3b-b9f3-c2b2253b63b8<br/>traceparent = 4f3b2c1a9d8e7f60123456789abcdef0
+    Ticket-->>Kafka: ticket-issued<br/>event_id = 2a3b4c5d-6e7f-4890-9123-456789abcdef<br/>correlation_id = 2d2f6c42-1df5-4d3b-b9f3-c2b2253b63b8<br/>traceparent = 00-4f3b2c1a9d8e7f60123456789abcdef0-1f2e3d4c5b6a7980-01
 
     Kafka->>Notify: consume reservation/payment/ticket events
     Note over Notify: service.name = notification-service<br/>span_id = 9c8b7a6d5e4f3210
@@ -242,11 +240,11 @@ sequenceDiagram
     Notify-->>Audit: audit event<br/>event_id = bb8d0c48-83d6-4d72-a2f0-f59e2773f1f5<br/>event_type = notification_sent<br/>user_id = 9d1b5db4-7f45-4d0c-9a31-43f62fd5d3ab<br/>trace_id = 4f3b2c1a9d8e7f60123456789abcdef0
 ```
 
-위 흐름에서 `trace_id = 4f3b2c1a9d8e7f60123456789abcdef0`은 클라이언트가 같은 사용자 행동 안에서 `traceparent`를 유지한다는 가정이다. 클라이언트가 요청마다 새 trace를 만들거나 `traceparent`를 전파하지 않으면 `POST /reservations`, `POST /payments`, Kafka consumer span이 서로 다른 trace로 갈라진다. 이 문제가 BFF를 두면 줄어든다. BFF가 사용자 행동 단위의 backend root span을 만들고, 각 MSA 서버로 같은 trace context를 전파할 수 있기 때문이다.
+위 흐름에서 `trace_id = 4f3b2c1a9d8e7f60123456789abcdef0`은 서버 경계에서 처음 생성되고, 클라이언트가 같은 예매 흐름 안에서 응답으로 받은 `traceparent`를 후속 요청에 릴레이한다는 가정이다. 클라이언트가 요청마다 `traceparent`를 버리거나 새로 만들면 `POST /reservations`, `POST /payments`, Kafka consumer span이 서로 다른 trace로 갈라진다.
 
 | ID | 생성 위치 | 전파 범위 | 주 조회 위치 |
 | --- | --- | --- | --- |
-| `trace_id` | client, BFF, Kong 중 최초 trace 시작점 | HTTP `traceparent`, Kafka header | Tempo, Loki 연결 |
+| `trace_id` | Kong 또는 최초 FastAPI inbound 경계 | HTTP `traceparent`, Kafka header | Tempo, Loki 연결 |
 | `request_id` | Kong 또는 서비스 inbound 경계 | HTTP header, app log, audit log | Loki, Kibana |
 | `service.name` 또는 `service_id` | 각 서비스 OpenTelemetry resource | span, metric, log, audit log | Grafana, Tempo, Loki |
 | `user_id` | auth-service JWT 발급 후 client/Kong/service에서 확인 | trusted user header, domain event, audit log | Kibana, 업무 API |
@@ -262,6 +260,7 @@ sequenceDiagram
 ## 관련 결정
 
 - ADR: `../../../adr/0004-observability-signal-routing-and-trace.md`
+- Frontend traceparent 처리 기준: `frontend-traceparent.md`
 - Tempo/Grafana 조회 기준: `tempo-grafana-query.md`
 - Sampling/retention 기준: `sampling-retention.md`
 
@@ -319,58 +318,11 @@ FastAPI OpenTelemetry instrumentation
 -> Grafana
 ```
 
-## BFF가 trace에 도움이 되는 이유
+## 프론트엔드 traceparent 관리
 
-현재 구조에서 dashboard가 여러 서비스를 직접 호출하면 각 API 요청은 서로 다른 진입점으로 들어간다. 클라이언트가 `traceparent`를 일관되게 만들고 모든 요청에 전파하지 않는 한, 예약 생성, 결제 요청, 티켓 조회는 Tempo에서 서로 다른 `trace_id`로 보인다.
+현재 구조에서는 프론트엔드가 Kong Ingress를 통해 각 서비스를 직접 호출한다. 클라이언트는 첫 요청에서 `traceparent`를 직접 만들지 않아도 된다. 서버 경계가 trace를 만들고 응답 header에 `traceparent`와 `X-Trace-Id`를 내려주면, 클라이언트는 같은 예매 흐름 안의 후속 요청에 그 `traceparent`를 그대로 보낸다.
 
-BFF를 두면 dashboard의 사용자 행동 하나를 BFF의 서버 사이드 span 하나로 받고, BFF가 downstream 서비스 호출에 같은 trace context를 전파할 수 있다. 이때 BFF는 좌석 선점, 결제 승인, 티켓 발급 같은 도메인 규칙이나 분산 트랜잭션을 소유하지 않는다. BFF의 역할은 화면 단위 API 조합, trace context 전파, 사용자 행동 단위 관측성 보강으로 제한한다.
-
-```mermaid
-flowchart TB
-    subgraph Current["현재: 클라이언트가 서비스 호출 순서를 조합"]
-        CurrentDashboard["dashboard 또는 수동 테스트"]
-        CurrentKong["Kong Ingress"]
-        CurrentReservation["reservation-service"]
-        CurrentPayment["payment-service"]
-        CurrentTicket["ticket-service"]
-        CurrentTempo["Tempo"]
-
-        CurrentDashboard -->|"POST /reservations<br/>trace_id = T1"| CurrentKong
-        CurrentKong --> CurrentReservation
-        CurrentReservation -->|"OTLP span<br/>trace_id = T1"| CurrentTempo
-
-        CurrentDashboard -->|"POST /payments<br/>trace_id = T2"| CurrentKong
-        CurrentKong --> CurrentPayment
-        CurrentPayment -->|"OTLP span<br/>trace_id = T2"| CurrentTempo
-
-        CurrentDashboard -->|"GET /tickets/me<br/>trace_id = T3"| CurrentKong
-        CurrentKong --> CurrentTicket
-        CurrentTicket -->|"OTLP span<br/>trace_id = T3"| CurrentTempo
-    end
-
-    subgraph WithBff["BFF 적용: 사용자 행동 하나를 같은 trace로 묶음"]
-        BffDashboard["dashboard"]
-        BffKong["Kong Ingress"]
-        Bff["dashboard-bff<br/>checkout action span"]
-        BffReservation["reservation-service"]
-        BffPayment["payment-service"]
-        BffTicket["ticket-service"]
-        BffTempo["Tempo"]
-
-        BffDashboard -->|"POST /checkout<br/>trace_id = T9"| BffKong
-        BffKong --> Bff
-        Bff -->|"POST /reservations<br/>traceparent = T9"| BffReservation
-        Bff -->|"POST /payments<br/>traceparent = T9"| BffPayment
-        Bff -->|"GET /tickets/me<br/>traceparent = T9"| BffTicket
-
-        Bff -->|"OTLP span<br/>trace_id = T9"| BffTempo
-        BffReservation -->|"OTLP span<br/>trace_id = T9"| BffTempo
-        BffPayment -->|"OTLP span<br/>trace_id = T9"| BffTempo
-        BffTicket -->|"OTLP span<br/>trace_id = T9"| BffTempo
-    end
-```
-
-이 차이 때문에 BFF는 "비즈니스 로직을 한곳에 합치기 위해서"가 아니라 "프론트의 사용자 행동 단위를 backend trace root로 만들기 위해서" 유용하다. 장기 트랜잭션, 보상 처리, 이벤트 재시도, 티켓 발급 보장은 각 서비스의 local transaction, outbox, Kafka consumer idempotency, Saga/process manager 영역으로 남긴다.
+프론트엔드 구현자는 별도 가이드인 `frontend-traceparent.md`를 기준으로 요청/응답 header와 저장 범위를 맞춘다.
 
 ## Repo 책임
 
