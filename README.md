@@ -125,6 +125,7 @@ medikong/
 | 이름 | 주소 | 비고 |
 | --- | --- | --- |
 | Grafana | http://localhost/grafana | `gitops` 레포에서 `task dev` 혹은 `task --taskfile platform/monitoring/Taskfile.yml up` 실행 |
+| pgAdmin | http://localhost/pgadmin | `gitops` 레포에서 `task dev` 혹은 `task dev:data` 실행. 로그인 `admin@example.com` / `admin`, DB 접속 `user` / `password` |
 
 ## AWS Dev 접속 주소
 
