@@ -157,12 +157,13 @@ admin / prom-local
 Grafana UI에서 `Dashboards`를 열고 아래 항목을 확인한다.
 
 ```text
-00 Service Metrics Overview
-01 Service Runtime Health
-02 Service Runtime Detail
-10 System Kubernetes Overview
-11 Pod Container Resources
-12 Node Pressure Overview
+App Ops 00 - Service Metrics Overview
+App Health 01 - Service Runtime Health
+App Health 02 - Service Runtime Detail
+Traffic Health 03 - Gateway and Mesh Metrics
+Infra Health 10 - Kubernetes Overview
+Infra Health 11 - Pod and Container Resources
+Infra Health 12 - Node Pressure Overview
 Payment Service Metrics
 ```
 
@@ -177,7 +178,7 @@ curl -fsS -u admin:prom-local 'http://127.0.0.1:3000/api/search?query=Node%20Pre
 
 ## 9. 서비스 현재 상태 패널 피드백
 
-`01 Service Runtime Health`에서 먼저 본다.
+`App Health 01 - Service Runtime Health`에서 먼저 본다.
 
 확인할 패널:
 
@@ -248,7 +249,7 @@ Available Pod Ratio by Deployment = 1 또는 100%
 
 ## 10. 서비스 상세 차트 피드백
 
-`02 Service Runtime Detail`에서 시간 구간을 바꿔 본다.
+`App Health 02 - Service Runtime Detail`에서 시간 구간을 바꿔 본다.
 
 추천 시간 범위:
 
@@ -311,7 +312,7 @@ curl -fsG 'http://127.0.0.1:9090/api/v1/query_range' \
 
 ## 11. 시스템/Kubernetes 상태 패널 피드백
 
-`10 System Kubernetes Overview`에서 전체 상태를 먼저 본다.
+`Infra Health 10 - Kubernetes Overview`에서 전체 상태를 먼저 본다.
 
 확인할 패널:
 
@@ -328,7 +329,7 @@ Top Memory Working Set
 Node Pressure Conditions
 ```
 
-`11 Pod Container Resources`에서 Pod/Container 상세를 본다.
+`Infra Health 11 - Pod and Container Resources`에서 Pod/Container 상세를 본다.
 
 ```text
 Containers Restarted 30m
@@ -341,7 +342,7 @@ Memory Working Set Top 10
 Memory Limit Usage Top 10
 ```
 
-`12 Node Pressure Overview`에서 Node 상태를 본다.
+`Infra Health 12 - Node Pressure Overview`에서 Node 상태를 본다.
 
 ```text
 Not Ready Nodes
@@ -399,12 +400,13 @@ cat > "${FEEDBACK_FILE}" <<'EOF'
 
 ## 확인한 대시보드
 
-- [ ] 00 Service Metrics Overview
-- [ ] 01 Service Runtime Health
-- [ ] 02 Service Runtime Detail
-- [ ] 10 System Kubernetes Overview
-- [ ] 11 Pod Container Resources
-- [ ] 12 Node Pressure Overview
+- [ ] App Ops 00 - Service Metrics Overview
+- [ ] App Health 01 - Service Runtime Health
+- [ ] App Health 02 - Service Runtime Detail
+- [ ] Traffic Health 03 - Gateway and Mesh Metrics
+- [ ] Infra Health 10 - Kubernetes Overview
+- [ ] Infra Health 11 - Pod and Container Resources
+- [ ] Infra Health 12 - Node Pressure Overview
 - [ ] Payment Service Metrics
 
 ## 현재 상태 패널 피드백
