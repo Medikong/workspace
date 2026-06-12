@@ -29,8 +29,10 @@ localhost:5001/synthetic-traffic:dev
 aws-dev image는 `gitops/platform/synthetic/values/aws-dev.yaml`에서 관리한다.
 
 ```text
-941141115079.dkr.ecr.ap-northeast-2.amazonaws.com/synthetic-traffic:latest
+941141115079.dkr.ecr.ap-northeast-2.amazonaws.com/synthetic-traffic:<git-sha>
 ```
+
+`gitops`의 `Synthetic Traffic Image Publish` workflow가 `platform/synthetic` runner image를 ECR에 push하고, 같은 실행에서 `values/aws-dev.yaml`의 `image.tag`를 실행 commit SHA로 갱신한다. 첫 실행 직후 기존 `latest` 참조가 깨지지 않도록 `latest` tag도 같이 push한다.
 
 aws-dev에서 private ECR을 쓰는 경우 `synthetic` namespace에도 `ecr-registry` image pull secret이 있어야 한다.
 
@@ -81,7 +83,34 @@ gitops/argo/applications/aws-dev/platform/synthetic.yaml
 gitops/platform/synthetic/values/aws-dev.yaml
 ```
 
-태그를 고정하고 싶으면 `values/aws-dev.yaml`의 `image.tag`를 commit SHA로 바꾼다.
+credential Secret은 SealedSecret으로 별도 관리한다. `synthetic-traffic` CronJob은 Secret을 만들지 않고, 다음 Application이 먼저 `synthetic-traffic-credentials` Secret을 준비한다.
+
+```text
+gitops/argo/applications/aws-dev/platform/sealed-secrets.yaml
+gitops/argo/applications/aws-dev/platform/synthetic-credentials.yaml
+gitops/platform/synthetic-credentials/synthetic-traffic-credentials.sealedsecret.yaml
+```
+
+운영 원칙:
+
+- Git에는 email/password가 들어간 평문 Kubernetes Secret을 커밋하지 않는다.
+- `synthetic-traffic-credentials`에는 customer/provider/admin email/password 6개 key만 둔다.
+- Secret 이름은 `synthetic-traffic-credentials`로 유지한다.
+- CronJob의 `secretRef.optional: false`는 유지한다. credential이 없으면 배포 설정 문제로 빠르게 실패해야 한다.
+
+credential을 회전할 때는 aws-dev Sealed Secrets controller의 public cert로 새 SealedSecret을 만든 뒤 GitOps에 반영한다.
+
+```bash
+kubeseal \
+  --cert aws-dev-sealed-secrets-cert.pem \
+  --format yaml \
+  < synthetic-traffic-credentials.secret.yaml \
+  > gitops/platform/synthetic-credentials/synthetic-traffic-credentials.sealedsecret.yaml
+```
+
+`synthetic-traffic-credentials.secret.yaml`은 로컬 임시 파일로만 만들고 Git에 추가하지 않는다.
+
+runner image를 다시 배포해야 할 때는 `gitops` repo의 `Synthetic Traffic Image Publish` workflow를 `main` 기준으로 실행한다. workflow는 ECR push 후 `values/aws-dev.yaml`의 `image.tag`를 commit SHA로 갱신하고 push한다.
 
 `values/aws-dev.yaml`의 `synthetic.baseUrl`과 `synthetic.externalBaseUrl`은 현재 다음 aws-dev 외부 DNS로 고정한다.
 
