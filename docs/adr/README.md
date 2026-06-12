@@ -24,6 +24,7 @@ ADR은 Architecture Decision Record의 약자로, 중요한 결정을 당시의 
 | ADR-0006 | accepted | 2026-06-08 | 서비스 간 Circuit Breaker는 Istio outlierDetection으로 시작한다 | `0006-use-istio-outlierdetection-for-mesh-circuit-breaker.md` |
 | ADR-0007 | accepted | 2026-06-08 | Istio 설치와 서비스 트래픽 정책은 ArgoCD Application으로 분리한다 | `0007-separate-istio-platform-and-traffic-policy-sync.md` |
 | ADR-0008 | accepted | 2026-06-08 | Istio mTLS STRICT는 mesh 내부부터 단계적으로 적용한다 | `0008-stage-istio-mtls-strict-rollout.md` |
+| ADR-0009 | accepted | 2026-06-12 | AWS dev NLB는 외부 80 포트로 받고 Kong NodePort 32407로 전달한다 | `0009-use-standard-http-listener-for-aws-dev-nlb.md` |
 
 ## Frontmatter
 
