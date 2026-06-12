@@ -112,11 +112,13 @@ kubeseal \
 
 runner image를 다시 배포해야 할 때는 `gitops` repo의 `Synthetic Traffic Image Publish` workflow를 `main` 기준으로 실행한다. workflow는 ECR push 후 `values/aws-dev.yaml`의 `image.tag`를 commit SHA로 갱신하고 push한다.
 
-`values/aws-dev.yaml`의 `synthetic.baseUrl`과 `synthetic.externalBaseUrl`은 현재 다음 aws-dev 외부 DNS로 고정한다.
+aws-dev CronJob은 cluster 안에서 실행되므로 `values/aws-dev.yaml`의 `synthetic.baseUrl`과 `synthetic.externalBaseUrl`은 내부 Kong service로 둔다.
 
 ```text
-http://medikong-default-kong-nlb-c17a54e23efd293c.elb.ap-northeast-2.amazonaws.com:32407
+http://kong-kong-proxy.kong.svc.cluster.local
 ```
+
+public NLB 자체의 외부 접근성은 cluster 밖에서 별도 확인한다. Pod 안에서 public NLB DNS와 NodePort를 호출하면 aws-dev 네트워크 경로에 따라 timeout이 날 수 있어, 서비스 E2E 검증과 네트워크 경로 검증을 분리한다.
 
 ## 3. CronJob 배포 상태 확인
 
