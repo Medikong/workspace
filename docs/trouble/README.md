@@ -21,6 +21,8 @@
 | TROUBLE-003 | triaged | p2 | service | 서비스 이미지 publish 빌드 시간 증가 | [2026-06-08-service-image-build-time-regression.md](2026-06-08-service-image-build-time-regression.md) |
 | TROUBLE-004 | resolved | p2 | observability | Synthetic 예약 충돌의 ERROR 로그 오분류 | [2026-06-11-synthetic-reservation-conflict-error-log.md](2026-06-11-synthetic-reservation-conflict-error-log.md) |
 | TROUBLE-005 | in_progress | p1 | observability | payment outbox trace context 컬럼 마이그레이션 누락 | [2026-06-11-payment-outbox-trace-context-migration.md](2026-06-11-payment-outbox-trace-context-migration.md) |
+| TROUBLE-006 | in_progress | p2 | observability | payment outbox DB 단독 trace의 작업 맥락 부재 | [2026-06-12-payment-outbox-db-only-trace.md](2026-06-12-payment-outbox-db-only-trace.md) |
+| TROUBLE-007 | triaged | p2 | observability | Kafka producer trace 계측이 호출부에 흩어지는 문제 | [2026-06-12-kafka-producer-trace-wrapper.md](2026-06-12-kafka-producer-trace-wrapper.md) |
 
 새 트러블을 추가하면 위 표에 한 줄을 추가한다. 해결된 기록도 삭제하지 않고 `status: closed`로 유지한다.
 

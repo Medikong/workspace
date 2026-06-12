@@ -2,6 +2,13 @@
 
 이 문서는 관측성 신호별 수집 경로와 repo 책임을 정리한다.
 
+관련 세부 문서:
+
+- Kafka producer trace wrapper 설계: `kafka-producer-wrapper.md`
+- 프론트엔드 traceparent relay 기준: `frontend-traceparent.md`
+- Tempo/Grafana 조회 기준: `tempo-grafana-query.md`
+- Trace sampling과 retention 기준: `sampling-retention.md`
+
 ## 트레이스 전체 과정
 
 클라이언트가 있다고 가정하면 사용자 예매 행동 하나에는 시스템 관측성 ID와 감사 로그 ID가 함께 생긴다. 큰 그림으로 보면 프론트엔드에서 시작된 요청이 인그레스를 지나 백엔드 MSA와 메시징 구간으로 이어지고, 그 과정의 신호가 관측성 인프라와 감사 로그 인프라로 나뉘어 저장된다. 현재 구조에서는 프론트엔드가 여러 MSA를 직접 호출하므로, 첫 요청에 `traceparent`가 없으면 서버 경계에서 새 trace를 만들고 응답 header로 돌려준다. 프론트엔드는 같은 사용자 흐름 안의 후속 요청에 그 `traceparent`를 릴레이한다.
