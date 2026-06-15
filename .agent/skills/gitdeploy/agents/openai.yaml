@@ -1,0 +1,4 @@
+interface:
+  display_name: "Git Deploy"
+  short_description: "Medikong tag based deploy workflow"
+  default_prompt: "Use $gitdeploy to prepare or run a Medikong GitHub tag-based deployment."

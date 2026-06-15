@@ -17,6 +17,10 @@ GitHub Issue나 Project 발행 후보를 다룰 때는 먼저 `docs/issues/READM
 Pull Request를 작성할 때는 `docs/issues/template/pull-request.md`를 기준으로 변경 내용, 배경, 범위, 운영 영향, 배포 참고, 검증, 롤백, 리스크와 후속 작업, 관련 이슈를 정리한다.
 repo별 `.github` PR 템플릿이 필요해지면 `docs/issues/template`의 원본 문서를 기준으로 파생하고, 원본 규칙은 이 폴더에서 일원화해 관리한다.
 
+## GitHub 이미지 배포
+
+GitHub 배포를 다룰 때는 먼저 `docs/runbooks/deployment/tag-based-image-deploy.md`를 확인한다. 배포 구조나 태그 규칙의 배경이 필요하면 `docs/architecture/deployment/README.md`를 함께 확인한다.
+
 ## docs 폴더 기준
 
 `docs/`는 Medikong polyrepo 전체에서 공유할 문서 기준점을 둔다. 단, 실제 코드 수정, 배포 선언, 인프라 변경은 각 repo의 책임 경계를 따른다.
