@@ -4,7 +4,7 @@
 
 ## 한 줄 요약
 
-외부 사용자는 HTTP 기본 포트 `80`으로 공개 URL에 접근한다. 외부 edge 구간에서 이 요청이 HAProxy의 `32047` 바인딩으로 연결되고, HAProxy는 사설망의 `node2:32047`에 요청을 전달한다. Kong Pod의 `hostPort`는 이 요청을 받아 Kubernetes Ingress 라우팅으로 내부 서비스에 연결한다.
+외부 사용자는 HTTP 기본 포트 `80`으로 공개 URL에 접근한다. OpenStack 안의 edge 역할 구간에서 이 요청이 HAProxy의 `32047` 바인딩으로 연결되고, HAProxy는 같은 OpenStack 사설망의 `node2:32047`에 요청을 전달한다. Kong Pod의 `hostPort`는 이 요청을 받아 Kubernetes Ingress 라우팅으로 내부 서비스에 연결한다.
 
 ```text
 Public URL :80 -> HAProxy :32047 -> node2 :32047 -> Kong :8000 -> Ingress -> Service ClusterIP -> Pod
@@ -16,32 +16,34 @@ Public URL :80 -> HAProxy :32047 -> node2 :32047 -> Kong :8000 -> Ingress -> Ser
 flowchart LR
     subgraph Internet["Public Internet"]
         User["User / external client"]
-        DNS["DNS<br/>api.example.com -> HAProxy public IP"]
+        DNS["DNS<br/>api.example.com -> OpenStack ingress endpoint"]
     end
 
-    subgraph Edge["Public Edge / DMZ"]
-        HAProxy["HAProxy<br/>frontend :32047<br/>backend node2:32047"]
-    end
-
-    subgraph PrivateNetwork["Private Server Network"]
-        Node2["node2 ingress node<br/>private IP 10.0.1.49<br/>hostPort :32047"]
-    end
-
-    subgraph Kubernetes["Kubernetes Cluster"]
-        subgraph KongNamespace["namespace: kong"]
-            KongService["Service: kong-kong-proxy<br/>type: ClusterIP<br/>:80 -> targetPort :8000"]
-            KongPod["Kong Pod on node2<br/>containerPort :8000<br/>hostPort :32047"]
+    subgraph OpenStack["OpenStack private cloud / tenant network"]
+        subgraph Edge["Edge / DMZ-like zone"]
+            HAProxy["HAProxy<br/>frontend :32047<br/>backend node2:32047"]
         end
 
-        subgraph AppNamespaces["Application Namespaces"]
-            Ingress["Ingress resources<br/>Host / Path routing"]
-            AppService["Application Service<br/>type: ClusterIP"]
-            AppPod["Application Pod"]
+        subgraph PrivateNetwork["Private server network"]
+            Node2["node2 ingress node<br/>private IP 10.0.1.49<br/>hostPort :32047"]
         end
 
-        subgraph Observability["Monitoring / Observability"]
-            Grafana["Grafana route<br/>for example /grafana"]
-            Metrics["Prometheus / Loki / Tempo"]
+        subgraph Kubernetes["Kubernetes Cluster"]
+            subgraph KongNamespace["namespace: kong"]
+                KongService["Service: kong-kong-proxy<br/>type: ClusterIP<br/>:80 -> targetPort :8000"]
+                KongPod["Kong Pod on node2<br/>containerPort :8000<br/>hostPort :32047"]
+            end
+
+            subgraph AppNamespaces["Application Namespaces"]
+                Ingress["Ingress resources<br/>Host / Path routing"]
+                AppService["Application Service<br/>type: ClusterIP"]
+                AppPod["Application Pod"]
+            end
+
+            subgraph Observability["Monitoring / Observability"]
+                Grafana["Grafana route<br/>for example /grafana"]
+                Metrics["Prometheus / Loki / Tempo"]
+            end
         end
     end
 
@@ -73,7 +75,7 @@ Client
   -> backend Pod
 ```
 
-DNS는 포트를 알지 못한다. DNS는 도메인을 외부 edge의 공인 IP로만 변환한다. 현재 구조에서는 클라이언트가 `http://<public-domain>`으로 접속하고, 외부 edge/HAProxy 구간에서 `32047` 바인딩을 거쳐 사설망 backend `node2:32047`로 전달한다.
+DNS는 포트를 알지 못한다. DNS는 도메인을 OpenStack으로 들어오는 외부 endpoint로만 변환한다. 현재 구조에서는 클라이언트가 `http://<public-domain>`으로 접속하고, OpenStack 안의 edge 역할 구간에서 HAProxy `32047` 바인딩을 거쳐 사설망 backend `node2:32047`로 전달한다.
 
 예시 구조:
 
