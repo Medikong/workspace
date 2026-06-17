@@ -216,6 +216,30 @@ API별 주요 결과:
 
 Grafana에서는 `Load 70 - Slow Trace Discovery`에서 `service=ticket-service`, `route=/tickets/me`, `min_duration_ms=100`으로 느린 요청 후보를 먼저 훑고, `trace_id` 링크로 Tempo Explore에 들어가 위 span들을 확인한다.
 
+### 2026-06-17 추가 trace: query 내부 공백
+
+Tempo trace `4fb0fcb4baed05705312683d654cb7e5`는 `/tickets/me` 전체 duration이 `425.35ms`였지만 DB `SELECT ticket_db` span은 `5.50ms`였다.
+이 trace는 SQL 실행 자체가 아니라 SQLAlchemy/런타임 진입 전후의 대기 구간을 더 의심하게 만든다.
+
+주요 분해는 다음과 같다.
+
+| 구간 | duration/gap |
+| --- | ---: |
+| root `GET /tickets/me` | `425.35ms` |
+| root 시작 후 `ticket.list.route` 시작 전 | `18.76ms` |
+| `ticket.list.route` | `290.07ms` |
+| route 내부에서 `ticket.list.query` 시작 전 | `117.47ms` |
+| `ticket.list.query` | `170.17ms` |
+| query 내부에서 DB `connect` 시작 전 | `140.10ms` |
+| DB `connect` | `10.64ms` |
+| DB `SELECT ticket_db` | `5.50ms` |
+| `ticket.list.response` | `0.56ms` |
+| route 종료 후 첫 `http send` 전 | `92.57ms` |
+
+따라서 다음 실험에서는 `ticket.list.query`를 다시 `ticket.list.query.build`, `ticket.list.query.execute`, `ticket.list.query.returned`로 나눠 본다.
+`ticket.list.query.execute`가 길지만 DB `connect`/`SELECT` span이 짧으면 SQLAlchemy pool checkout, DBAPI 진입 전 대기, Python thread scheduling을 우선 후보로 둔다.
+반대로 `ticket.list.query.execute` 자체가 짧고 root span만 길면 FastAPI response validation/serialization, middleware, network/Kong/sidecar 쪽을 본다.
+
 ## Ticket-Service Read Scenario
 
 `ticket-service-read-load-test`는 reservation journey의 축소판이 아니다.
