@@ -4,10 +4,10 @@
 
 ## 한 줄 요약
 
-외부 사용자는 HAProxy가 공개한 HTTP 포트 `32047`로 접근한다. HAProxy는 같은 포트로 사설망의 `node2:32047`에 요청을 전달하고, Kong Pod의 `hostPort`가 이 요청을 받아 Kubernetes Ingress 라우팅으로 내부 서비스에 연결한다.
+외부 사용자는 HTTP 기본 포트 `80`으로 공개 URL에 접근한다. 외부 edge 구간에서 이 요청이 HAProxy의 `32047` 바인딩으로 연결되고, HAProxy는 사설망의 `node2:32047`에 요청을 전달한다. Kong Pod의 `hostPort`는 이 요청을 받아 Kubernetes Ingress 라우팅으로 내부 서비스에 연결한다.
 
 ```text
-Public URL :32047 -> HAProxy :32047 -> node2 :32047 -> Kong :8000 -> Ingress -> Service ClusterIP -> Pod
+Public URL :80 -> HAProxy :32047 -> node2 :32047 -> Kong :8000 -> Ingress -> Service ClusterIP -> Pod
 ```
 
 ## 전체 경계
@@ -45,7 +45,7 @@ flowchart LR
         end
     end
 
-    User -->|"http://api.example.com:32047"| DNS
+    User -->|"http://api.example.com:80"| DNS
     DNS -->|"A record"| HAProxy
     HAProxy -->|"private backend node2:32047"| Node2
     Node2 -->|"hostPort 32047 -> containerPort 8000"| KongPod
@@ -59,11 +59,12 @@ flowchart LR
 
 ## 외부 요청 경로
 
-현재 외부 공개 URL은 HAProxy에 바인딩한 HTTP 포트 `32047`을 사용한다.
+현재 외부 공개 URL은 HTTP 기본 포트 `80`을 사용한다. HAProxy 쪽 실제 바인딩과 사설망 backend 연결은 `32047`을 사용한다.
 
 ```text
 Client
   -> DNS
+  -> Public URL:80
   -> HAProxy:32047
   -> node2:32047
   -> Kong Pod containerPort 8000
@@ -72,7 +73,7 @@ Client
   -> backend Pod
 ```
 
-DNS는 포트를 알지 못한다. DNS는 도메인을 HAProxy의 공인 IP로만 변환한다. 현재 구조에서는 클라이언트가 `http://<public-domain>:32047`로 접속하고, HAProxy가 사설망 backend `node2:32047`로 전달한다.
+DNS는 포트를 알지 못한다. DNS는 도메인을 외부 edge의 공인 IP로만 변환한다. 현재 구조에서는 클라이언트가 `http://<public-domain>`으로 접속하고, 외부 edge/HAProxy 구간에서 `32047` 바인딩을 거쳐 사설망 backend `node2:32047`로 전달한다.
 
 예시 구조:
 
