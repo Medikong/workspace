@@ -214,6 +214,8 @@ API별 주요 결과:
 | `ticket.list.route`는 짧고 HTTP root span만 길다 | FastAPI response validation/serialization, middleware/runtime, worker scheduling |
 | 세 span이 모두 짧고 k6 step만 길다 | network/Kong/sidecar, client parsing, load generator saturation |
 
+Grafana에서는 `Load 70 - Slow Trace Discovery`에서 `service=ticket-service`, `route=/tickets/me`, `min_duration_ms=100`으로 느린 요청 후보를 먼저 훑고, `trace_id` 링크로 Tempo Explore에 들어가 위 span들을 확인한다.
+
 ## Ticket-Service Read Scenario
 
 `ticket-service-read-load-test`는 reservation journey의 축소판이 아니다.
@@ -231,7 +233,7 @@ setup 단계는 run id 기반 customer pool을 만들고 `/tickets/issue`로 cus
 RPS, duration, VU, local/cluster 조건은 scenario 코드가 아니라 `gitops/platform/loadtest/values/scenarios/ticket-service-read-load-test.yaml` 또는 `values/presets/ticket-service-read/*.yaml`에서 관리한다.
 `limit`, pagination page depth, wait target ticket position, customer별 ticket 수, active customer 수 역시 values로 둔다.
 
-리포트에서는 `loadtest_api_summary.step`과 `loadtest_run_report.api_step_results[].step`에서 `ticket-list`, `ticket-list-pagination`, `ticket-wait-by-list`를 따로 본다.
+리포트에서는 `loadtest_run_report.api_step_results[].step`에서 `ticket-list`, `ticket-list-pagination`, `ticket-wait-by-list`를 따로 본다.
 처리량은 기존 `http_reqs_rate`와 사람이 읽기 쉬운 `rps`가 함께 남는다.
 
 ## Pyroscope Check
