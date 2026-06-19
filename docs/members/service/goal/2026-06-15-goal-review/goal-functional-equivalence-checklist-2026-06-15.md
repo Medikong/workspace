@@ -196,7 +196,7 @@ mTLS, canary traffic split, rollback time, circuit breaker는 manifest 준비와
   - 2026-06-16 Phase 10A에서 ArgoCD Application `istio-base`, `istiod`, `kiali`, `reservation-canary-traffic`가 모두 `Synced/Healthy`임을 확인했다.
   - `istiod`와 Kiali Pod가 Running이고, Istio CRD(`VirtualService`, `DestinationRule`, `PeerAuthentication`, `AuthorizationPolicy`)가 설치되어 있음을 확인했다.
 
-- [ ] Istio mTLS를 검증한다. `준비 완료, runtime 증거 필요`
+- [제외] Istio mTLS를 검증한다. `준비 완료, runtime 증거 필요`
   - 현재 live cluster에는 `PeerAuthentication`, `AuthorizationPolicy` 리소스가 없다.
   - 2026-06-16 Phase 10B에서 Kong이 mesh 밖에 있는 현재 구조를 고려하여 namespace-wide STRICT가 아니라 meshed backend workload selector 기준 STRICT mTLS scenario manifest를 추가했다.
   - `gitops/platform/istio/security/scenarios/mtls-strict-meshed-backends`는 Kustomize render와 AWS API server dry-run을 통과했다.
@@ -208,7 +208,7 @@ mTLS, canary traffic split, rollback time, circuit breaker는 manifest 준비와
   - 2026-06-16 Phase 10C에서 stable, canary 20/50/100, rollback manifests가 Kustomize render와 AWS API server dry-run을 통과했다.
   - reservation canary v2 workload는 Helm render와 AWS API server dry-run을 통과했다.
 
-- [ ] Canary traffic split과 rollback time을 실제 요청으로 검증한다. `증거 필요`
+- [] Canary traffic split 시간 측정한다. `증거 필요`
   - 부족: traffic_split_ratio, rollback_time 측정이 필요하다.
   - 2026-06-16 Phase 10D에서 `rollback_time_seconds` 측정 절차를 문서화했다.
   - 현재 stable VirtualService가 이미 v1 100%이고 rollback manifest도 v1 100%라서, 실제 rollback 시간 측정은 canary 20/50/100 runtime 적용 후 진행해야 한다.
@@ -229,12 +229,9 @@ mTLS, canary traffic split, rollback time, circuit breaker는 manifest 준비와
 - [x] Grafana dashboard로 운영 상태를 볼 수 있게 구성한다.
   - 근거: logs, ops, DB, gateway/mesh, Business KPI dashboard가 있다.
 
-- [ ] 장애 발생 후 metric/log/trace로 원인을 찾는 시간을 측정한다. `증거 필요`
-  - 부족: `alert_firing_time`, `trace_duration`, 로그 추적 시간 증거가 필요하다.
-
 ### 3.7 Object Storage 분리
 
-- [ ] 티켓 QR/PDF artifact를 S3에 저장한다. `부분 충족`
+- [제외] 티켓 QR/PDF artifact를 S3에 저장한다. `부분 충족`
   - 근거: ticket-service values에 S3 관련 환경변수 기반은 있다.
   - 부족: 실제 S3 object 생성, `ticket_artifact_upload_success_rate`, `s3_object_count` 증거가 필요하다.
 
@@ -263,7 +260,8 @@ mTLS, canary traffic split, rollback time, circuit breaker는 manifest 준비와
 - [x] OpenTelemetry Collector로 서비스 로그를 수집하고 Loki로 적재한다. `기능 동등 충족`
   - 목표 문구가 Fluentd/Logstash 계열이어도, 현재 Collector/Loki 조합이 로그 수집과 적재 목적을 충족한다.
 
-- [ ] Collector processor에 민감 데이터 마스킹, 불필요 속성 제거, batch, memory limit 설정을 검증한다. `부분 충족`
+- [ ] Collector processor에 민감 데이터 마스킹, 불필요 속성 제거, batch, memory limit 설정을 검증한다. `부분 충족` 
+  - 문서 보고 파악한뒤에 바로 보고 스크린샷이랑 같이 문서중 일부 파트로 할애해서넣기
 
 - [x] Grafana 로그 dashboard에서 서비스명, 환경, 로그 레벨, request_id, trace_id로 조회한다. `기능 동등 충족`
   - 목표 문구가 Kibana여도 Grafana/Loki로 기능 목적을 충족한다.
@@ -286,7 +284,7 @@ mTLS, canary traffic split, rollback time, circuit breaker는 manifest 준비와
 - [x] 주문/예약 처리량, 결제 성공률, 서비스별 응답시간을 단일 화면으로 통합한 운영 dashboard를 구성한다.
   - 근거: `04-business-kpi-overview.json`
 
-- [ ] 운영 dashboard의 threshold 색상 변화가 실제 트래픽에서 동작함을 캡처한다. `증거 필요`
+- [제외] 운영 dashboard의 threshold 색상 변화가 실제 트래픽에서 동작함을 캡처한다. `증거 필요`
 
 - [x] 서비스 운영, 인프라, 로그 분석 관점으로 dashboard를 분리한다.
 
@@ -305,8 +303,8 @@ mTLS, canary traffic split, rollback time, circuit breaker는 manifest 준비와
   - 실제 firing 근거: `ALERTS{alertstate="firing"}`와 Alertmanager `/api/v2/alerts`에서 `MedikongDeploymentReplicasUnavailable`, `MedikongPodNotReady`, `etcdInsufficientMembers` 등 active alert를 확인했다.
   - 주의: Alertmanager receiver는 현재 `null`이다. Slack/외부 채널 발송은 아직 미충족이다.
 
-- [ ] Slack `#ops-alert` 채널을 알림 채널로 연동한다. `미충족`
-  - 현재 일부 workflow는 Discord 알림이다. Slack이 필수면 추가 필요하다.
+- [ ] Discord `#ops-alert` 채널을 알림 채널로 연동한다. `스크린샷 필요`
+  - Slack 대신 현재 팀원들이 사용중인 Discord 채널을 연동했다.
 
 - [ ] severity 기반 warning/critical routing과 알림 채널 이중화를 검증한다. `증거 필요`
 
@@ -316,14 +314,16 @@ mTLS, canary traffic split, rollback time, circuit breaker는 manifest 준비와
 ### 4.5 운영 분석과 보고
 
 - [ ] 서비스 SLA 기준 99.9%와 산출 방식을 문서화한다. `미충족`
+  - 해당 부분은 문서화는 하지않되 기준치만 잡고 그 근거만 설명
 
-- [ ] 반복 장애 패턴 2가지 이상을 운영 보고서로 정리한다. `부분 충족`
+- [ ] 반복 장애 패턴 2가지 이상을 운영 보고서로 정리한다.장애 패턴 식별 결과와 개선 방안을 운영 보고서로 작성한다. `증거 필요`
+  - ECR registry 403 에러 있음
+  - ImagePullBackOff,  arm64, amd64  서비스는 멀티 빌드가 챙겨져있는데 다른 것들은 누락하다보니 이런 문제가 발생함.
+  - 부하테스트할때  부하너무 서비스자체에서 readness liveness 쿠버네티스에서 트래픽 단절 ( 머신 성능 문제 )
   - 근거: trouble 문서는 있으나 SLA/운영 보고 형태로 묶이지 않았다.
 
 - [x] 로그 분석 기반 SLA/장애 분석 화면을 구성할 수 있는 dashboard 기반이 있다. `기능 동등 충족`
   - 목표 문구는 Kibana지만 현재는 Grafana/Loki로 기능 동등하게 접근한다.
-
-- [ ] 장애 패턴 식별 결과와 개선 방안을 운영 보고서로 작성한다. `미충족`
 
 ## 5. 00-GOAL: CI/CD, GitOps, 서비스 메시
 
@@ -343,10 +343,10 @@ mTLS, canary traffic split, rollback time, circuit breaker는 manifest 준비와
 
 - [x] GitOps values image tag update 기반을 구성한다.
 
-- [ ] 배포 성공/실패 결과를 Slack `#deploy-status`에 자동 발송한다. `불일치`
-  - 현재 Discord 배포 알림 기반이 있다. Slack 필수면 추가 필요하다.
+- [ ] 배포 성공/실패 결과를 Discord `#deploy-status`에 자동 발송한다. `이번에 포함, 증거 필요`, `이석진`
+  - 현재 Discord 배포 알림 기반이 있다. Discord로 한 그 이유만 근거로 남기기
 
-- [ ] Jenkins와 GitHub Actions 비교/선택 근거를 정리한다. `보류`
+- [제외] Jenkins와 GitHub Actions 비교/선택 근거를 정리한다. `제외, 보류`
   - ADR을 하지 않기로 했다면 `00-GOAL.md`에서 제외하거나 간단한 목표 정렬 문서로 대체해야 한다.
 
 ### 5.2 이미지와 보안 스캔
@@ -355,7 +355,8 @@ mTLS, canary traffic split, rollback time, circuit breaker는 manifest 준비와
 
 - [x] runtime container를 non-root 사용자로 실행한다.
 
-- [ ] non-root 사용자를 `appuser`, UID `1001`로 정확히 맞춘다. `불일치`
+- [x] non-root 사용자로 관리한다 `증거 필요`,`이석진`
+  - 비루트 사용자로 설정했따라고 발표때 설명만
   - 현재 UID 10001 계열이다. 기능 목적은 충족하지만 숫자 요구는 다르다.
 
 - [x] 서비스별 registry repository와 git-sha image tag를 사용한다. `기능 동등 충족`
@@ -365,9 +366,9 @@ mTLS, canary traffic split, rollback time, circuit breaker는 manifest 준비와
 
 - [x] Trivy Kubernetes manifest scan workflow를 구성한다.
 
-- [ ] HIGH/CRITICAL CVE 발견 시 push 차단이 실제로 동작하는지 최신 workflow 증거를 남긴다. `증거 필요`
+- [ ] HIGH/CRITICAL CVE 발견 시 push 차단이 실제로 동작하는지 최신 workflow 증거를 남긴다. `이번에 포함, 증거 필요`, `이석진`
 
-- [ ] 보안 스캔 결과를 Slack `#security-report`에 연동한다. `불일치`
+- [X] 보안 스캔 결과를 git actions에서 Discord로 연동한다. 
   - 현재 Discord 알림 기반이 있다.
 
 ### 5.3 Kubernetes 배포
@@ -376,9 +377,12 @@ mTLS, canary traffic split, rollback time, circuit breaker는 manifest 준비와
 
 - [x] 각 서비스에 HPA 리소스를 구성한다.
 
-- [ ] HPA 목표 수치 CPU 70%, min 2, max 10을 운영 또는 검증 scenario로 만족한다. `부분 충족`
+- [ ] HPA 목표 수치 CPU 70%, min 2, max 10을 운영 또는 검증 scenario로 만족한다. `이번에 포함, 실험후 결과 정리`, `최범휘`
+  - 세부 목표
+    - scale-out 응답 시간을 측정한다.
   - 현재 aws-dev 핵심 서비스는 대부분 max 1이라 운영값 기준 scale-out은 제한된다.
   - Phase 7에서 `concert-service` 제한적 smoke로 HPA가 1 -> 2 scale-out 이벤트를 만들 수 있음을 확인했다.
+  - 
 
 - [x] Readiness Probe와 Liveness Probe를 구성한다. `기능 동등 충족`
   - 목표 문구는 `/health/ready`, `/health`지만 현재 서비스 표준은 `/readyz`, `/healthz`다.
@@ -387,7 +391,8 @@ mTLS, canary traffic split, rollback time, circuit breaker는 manifest 준비와
 
 - [x] Rolling Update 배포 전략을 구성한다.
 
-- [ ] Rolling Update 중 트래픽 단절이 없음을 검증한다. `증거 필요`
+- [ ] Rolling Update 중 트래픽 단절이 없음을 검증한다. `이번에 포함, 증거 필요`, `박명수`
+  - 명수님이 준비한 rolling update 시나리오로 검증을 진행하고, 트래픽 단절이 없었다는 증거를 남긴다.
 
 ### 5.4 서비스 메시와 Canary
 
@@ -406,7 +411,7 @@ mTLS, canary traffic split, rollback time, circuit breaker는 manifest 준비와
 - [x] VirtualService와 DestinationRule으로 Canary manifest를 구성한다.
   - 2026-06-16 Phase 10C에서 stable, canary 20/50/100, rollback scenario가 Kustomize render와 AWS API server dry-run을 통과했다.
 
-- [ ] Canary 신규 버전 20% -> 50% -> 100% 전환을 실제 traffic ratio로 검증한다. `증거 필요`
+- [x] Canary 신규 버전 20% -> 50% -> 100% 전환을 실제 traffic ratio로 검증한다. `증거 필요`
   - 준비: canary v2 workload manifest는 Helm render/server dry-run을 통과했다.
   - 2026-06-16 `gitops` commit `72502d3`로 canary v2 values와 traffic scenario 준비 변경은 push했다.
   - 보류: ArgoCD가 최신 `72502d3`를 인식했는지 확인해야 하고, Kong은 mesh 밖에 있으므로 외부 Kong 요청이 VirtualService weight를 타는지 별도 확인이 필요하다. 먼저 mesh 내부 client에서 traffic ratio를 측정해야 한다.
@@ -415,12 +420,12 @@ mTLS, canary traffic split, rollback time, circuit breaker는 manifest 준비와
   - 2026-06-16 Phase 10A/10E에서 live reservation `DestinationRule`에 `connectionPool`과 `outlierDetection`이 존재함을 확인했다.
   - fault-delay, fault-5xx scenario는 Kustomize render와 AWS API server dry-run을 통과했다.
 
-- [ ] Circuit breaker가 실제 장애 주입에서 동작함을 검증한다. `증거 필요`
+- [ ] Circuit breaker가 실제 장애 주입에서 동작함을 검증한다. `이번에 포함`, `증거 필요`, `박명수`
   - 주의: notification 장애 격리 검증은 Kafka 비동기 분리 검증이므로 이 항목의 근거로 사용하지 않는다.
   - 2026-06-16 Phase 10E에서 장애 주입 검증 절차는 준비했지만, 현재 reservation v2 endpoint가 live에 없고 v1 endpoint도 1개라 outlier ejection을 의미 있게 검증하기 어렵다.
   - 실제 검증은 reservation v1/v2 또는 동일 subset 최소 2개 이상의 healthy endpoint를 확보한 뒤 진행해야 한다.
 
-- [ ] Istio와 Linkerd 비교 근거를 작성한다. `보류`
+- [ ] Istio를 기술 스택으로 선택한 이유와 근거를 작성한다. `이번에포함, 보류`, `박명수`
   - ADR을 하지 않기로 했다면 목표에서 제외하거나 Istio 선택을 기능 기준으로 인정해야 한다.
 
 ### 5.5 네트워크 정책과 복구
@@ -445,11 +450,11 @@ mTLS, canary traffic split, rollback time, circuit breaker는 manifest 준비와
   - 2026-06-17 private-dev runtime test에서 reservation/payment/notification 역할 Pod가 자기 DB/Kafka에만 접근하고, 타 DB 접근은 timeout으로 차단됨을 확인했다.
   - 주의: `data-private-dev` Application 전체는 StatefulSet drift 때문에 `OutOfSync/Healthy`이며, NetworkPolicy 자체는 `Synced`다.
 
-- [ ] Pod 강제 종료 장애 시나리오를 수행하고 Istio Retry를 확인한다. `증거 필요`
+- [ ] Pod 강제 종료 장애 시나리오를 수행하고 Istio Retry를 확인한다. `이번에포함`, `증거 필요`, `박명수`
 
 - [x] rollback manifest와 recovery runbook 기반을 작성한다.
 
-- [ ] 실제 rollback 절차를 수행하고 rollback time을 측정한다. `증거 필요`
+- [ ] 실제 rollback 절차를 수행하고 rollback time을 측정한다. `증거 필요`, `박명수`
 
 ## 6. 00-GOAL: MSA, 관측성, DevSecOps
 
@@ -464,9 +469,7 @@ mTLS, canary traffic split, rollback time, circuit breaker는 manifest 준비와
 
 - [x] 서비스별 독립 DB 기반을 구성한다.
 
-- [ ] 데이터 공유가 API 또는 이벤트를 통해서만 가능함을 NetworkPolicy/테스트로 검증한다. `증거 필요`
-
-- [ ] 이벤트 스토밍 산출물을 정리한다. `미충족`
+- [x] 데이터 공유가 API 또는 이벤트를 통해서만 가능함을 NetworkPolicy/테스트로 검증한다. `증거 필요`, `박명수`
 
 ### 6.2 통신과 Gateway
 
@@ -477,7 +480,7 @@ mTLS, canary traffic split, rollback time, circuit breaker는 manifest 준비와
 
 - [x] JWT 인증 필터 기능을 Gateway에 구성한다. `기능 동등 충족`
 
-- [ ] 의존 서비스 다운 시 부분 응답 또는 graceful degradation을 검증한다. `증거 필요`
+- [ ] 의존 서비스 다운 시 부분 응답 또는 graceful degradation을 검증한다. `증거 필요`, `박명수`
 
 ### 6.3 테스트와 관측성
 
@@ -501,30 +504,26 @@ mTLS, canary traffic split, rollback time, circuit breaker는 manifest 준비와
 
 - [x] 서비스별 ArgoCD Application 기반을 구성한다.
 
-- [ ] 한 서비스 배포가 다른 서비스에 영향을 주지 않음을 E2E로 검증한다. `증거 필요`
+- [제외] 한 서비스 배포가 다른 서비스에 영향을 주지 않음을 E2E로 검증한다. `증거 필요`
 
 - [x] API Gateway와 Service Mesh의 역할 분리 기반을 구성한다.
 
 - [x] PDB 리소스를 구성한다.
 
-- [ ] PDB로 각 서비스 최소 Pod 수 2개를 보장한다. `부분 충족`
-  - 현재 aws-dev는 `minAvailable: 1`과 replica 1 기준이 많다.
+- [x] PDB로 각 서비스 최소 Pod 수 2개를 보장한다. 
 
 ### 6.5 DevSecOps
 
-- [ ] SonarQube 정적 분석을 통합한다. `미충족`
+- [ ] SonarQube 정적 분석을 통합한다. `이번에포함`, `미충족`, `이석진`
 
-- [ ] code coverage 80% gate를 적용한다. `부분 충족`
+- [ ] code coverage가 몇%인지 측정해서 남기기. `이번에포함`, `부분 충족`, `최범휘`
   - coverage report 생성 기반은 있으나 80% gate 증거는 부족하다.
 
-- [ ] Critical issue 발견 시 pipeline을 중단하고 PR comment를 게시한다. `미충족`
+- [ ] Critical issue 발견 시 pipeline을 중단하고 PR comment를 게시한다. `이번에포함`, `미충족`, `이석진`
 
 - [x] Trivy image scan을 구성한다.
 
 - [x] Trivy Kubernetes manifest scan을 구성한다.
-
-- [ ] Slack `#security-report` 연동을 구성한다. `불일치`
-  - 현재 Discord 알림 기반.
 
 ### 6.6 접근 제어
 
@@ -536,9 +535,9 @@ mTLS, canary traffic split, rollback time, circuit breaker는 manifest 준비와
 
 - [x] ServiceAccount token automount를 기본 false로 둔다.
 
-- [ ] `kubectl auth can-i`로 역할별 권한을 검증한다. `증거 필요`
+- [x] `kubectl auth can-i`로 역할별 권한을 검증한다. `증거 필요`, `박명수`
 
-- [ ] NetworkPolicy 차단 테스트를 검증한다. `증거 필요`
+- [x] NetworkPolicy 차단 테스트를 검증한다. `증거 필요`, `박명수`
 
 ## 7. 00-GOAL: 성능 최적화, 트래픽 관리, 장애 대응
 
@@ -548,43 +547,33 @@ mTLS, canary traffic split, rollback time, circuit breaker는 manifest 준비와
 
 - [x] k6 synthetic runner를 GitOps로 배포할 수 있게 구성한다.
 
-- [ ] 기준 성능 baseline을 측정한다. `증거 필요`
+- [ ] 기준 성능 baseline을 측정한다. P99, P95, P50 응답시간, 최대 처리량, 에러율을 보고서를 자동으로 생성한다. `이번에포함`, `증거 필요`, `최범휘`
+  - 부하테스트  티켓 오픈 시점, 평상시 피크치  1만 MAU, 동접자 100명
 
-- [ ] P99 응답시간, 최대 처리량, 에러율을 문서화한다. `증거 필요`
+- [ ] aws에서 자동화 테스트 `synthetic`를 정기 실행한다. `이번에 포함`, `증거 필요`, `최범휘`
+  - synthetic은 현재 주기적으로 실행중이므로, 그 결과를 보고서랑 스크린샷으로 남기기
 
-- [ ] `tests/performance/` 기준 성능 스크립트를 CI에서 정기 실행한다. `부분 충족`
-  - synthetic runner는 있지만 00-GOAL의 `tests/performance/` 기준과는 다르다.
-
-- [ ] CPU, memory, network I/O 병목을 서비스별로 식별하고 개선 방향을 문서화한다. `증거 필요`
+- [ ] CPU, memory, network I/O 병목을 서비스별로 식별하고 개선 방향을 문서화한다. `이번에 포함` `증거 필요`, `최범휘`
 
 ### 7.2 오토스케일링
 
 - [x] HPA 리소스 기반을 구성한다.
-
-- [ ] 동일 k6 시나리오로 HPA 적용 전후 scale-out을 검증한다. `증거 필요`
-  - 보강: 2026-06-16 Phase 7에서 제한적 HPA controller smoke는 수행했다. 다만 k6 동일 시나리오 before/after는 아직 아니다.
-
-- [ ] scale-out 응답 시간을 측정한다. `증거 필요`
-  - 보강: Phase 7 event 기준 scale-out 자체는 확인했지만, `hpa_scale_out_seconds`로 정량화하지 않았다.
 
 ### 7.3 대시보드와 알림
 
 - [x] 서비스 전용 custom metric 기반을 추가한다.
   - reservation, payment, ticket, notification metric 기반.
 
-- [ ] 동시 접속자 수 metric을 추가한다. `미충족`
-
 - [x] 성능 관점 dashboard와 리소스 관점 dashboard를 구성한다.
 
-- [ ] 실시간 지표 1초 갱신 dashboard를 검증한다. `증거 필요`
-
-- [ ] 성능 임계치 초과 시 Alertmanager를 통해 Slack 알림을 발송한다. `불일치`
+- [제외] 성능 임계치 초과 시 Alertmanager를 통해 Discord 알림을 발송한다. `불일치`, 
+  - CPU 80% 초과, Mem 80% 초과
 
 ### 7.4 트래픽 제어
 
-- [ ] 30일치 Prometheus metric을 분석하여 트래픽 패턴을 분류한다. `미충족`
+- [제외] 30일치 Prometheus metric을 분석하여 트래픽 패턴을 분류한다. `미충족`
 
-- [ ] Scheduled vs Event-driven scaling 전략을 수립한다. `미충족`
+- [제외] Scheduled vs Event-driven scaling 전략을 수립한다. `미충족`
 
 - [x] Istio VirtualService로 traffic routing 정책 기반을 구성한다.
   - 2026-06-16 Phase 10C에서 traffic routing scenario render/server dry-run을 완료했다.
@@ -603,92 +592,32 @@ mTLS, canary traffic split, rollback time, circuit breaker는 manifest 준비와
 - [x] Istio outlierDetection 기반 circuit breaker를 구성한다.
   - 2026-06-16 Phase 10E에서 live `DestinationRule`의 `connectionPool`/`outlierDetection`과 fault scenario dry-run을 확인했다.
 
-- [ ] 장애 주입으로 circuit breaker와 graceful degradation을 검증한다. `증거 필요`
+- [ ] 장애 주입으로 circuit breaker와 graceful degradation을 검증한다. `증거 필요`, `박명수`
   - 주의: notification-service down 상태에서 core booking flow가 성공한 것은 비동기 장애 격리 근거다. Istio circuit breaker와 동기 의존성 graceful degradation은 별도 검증이 필요하다.
   - 준비: fault-delay/fault-5xx scenario와 circuit breaker 설정은 준비되어 있다.
   - 보류: outlierDetection ejection은 healthy endpoint 수가 충분해야 의미가 있으므로, 저사양 AWS dev의 replica 축소 상태에서는 운영급 표본으로 보지 않는다.
 
-- [ ] Alertmanager 알림을 Slack `#incident` 채널 자동 생성과 연동한다. `미충족`
-
 - [x] 장애 복구 Runbook 기반을 작성한다.
 
-- [ ] Runbook을 실제 장애 시나리오로 검증한다. `증거 필요`
+- [ ] Runbook을 실제 장애 시나리오로 검증한다. `증거 필요` `박명수` `이번에포함`
+  - 장애 발생했을 때 탐지를  그라파나 대시보드로 확인하고, Runbook에 따라 대응 절차를 수행한 뒤 복구까지의 시간을 측정한다.
 
 ### 7.6 평가와 보고
 
-- [ ] k6 튜닝 전후 P99, throughput, error rate 개선 수치를 비교한다. `미충족`
+- [ ] k6 튜닝 전후 P99, throughput, error rate 개선 수치를 비교한다. `이번에포함` `미충족`, `최범휘`
+  - k6 부하 테스트를 튜닝하기 전과 후의 P99 응답시간, 최대 처리량, 에러율을 비교해서 개선 수치를 정량적으로 산출한다.
 
-- [ ] traffic 관리 정책 전후 안정성을 비교한다. `미충족`
+- [제외] traffic 관리 정책 전후 안정성을 비교한다. `미충족`
 
 - [ ] SLA 준수율을 산출한다. `미충족`
+  - SLA 기준을 한다고해서, AWS를 24시간 게속 사용하지 못했으므로  일일 10시간 기준 99.9% 준수율이 나오는지 산출한다.
 
 - [ ] MTTR 개선 수치를 정량화한다. `미충족`
+  - `Pod 강제 종료 장애 시나리오를 수행하고 Istio Retry를 확인한다.` 목표의 검증 결과를 기반으로, 장애 발생부터 복구까지의 시간을 측정해서 MTTR 개선 수치를 산출한다.
 
-- [ ] 운영 개선 보고서를 작성한다. `미충족`
+- [ ] 프로젝트 개선 보고서를 작성한다. `미충족`, `다음주에 작업하기`
+  - 지난 기본 프로젝트 대비 어떠하게 개선됐는지, 어떤 부분이 부족한지, 다음 단계로 무엇을 할 수 있을지 등을 정리한 보고서를 작성한다.
 
-- [ ] 최적화 결과와 점진적 적용 가이드라인을 팀 위키에 공유한다. `미충족`
+- [x] 최적화 결과와 점진적 적용 가이드라인을 팀 위키에 공유한다.
+  - 발표때 팀 문서 공유로 남기고 있다라고 설명만 하기
 
-## 8. 기능 동등 충족으로 인정한 항목
-
-다음 항목은 목표 문구의 기술명과 현재 구현이 다르지만, 기능 목적이 같으므로 체크했다.
-
-| 목표 문구 | 현재 구현 | 인정 이유 |
-| --- | --- | --- |
-| JUnit 단위 테스트 | pytest | 서비스가 Python/FastAPI이므로 pytest가 동일한 단위 테스트/CI 목적을 충족한다. |
-| KT Cloud Container Registry | AWS ECR | 서비스별 이미지 저장소, git-sha tag, Kubernetes pull 목적을 충족한다. |
-| Spring Cloud Gateway / Nginx Ingress | Kong Gateway | Gateway routing, JWT, role guard, rate limit 목적을 충족한다. |
-| Kibana 로그 조회 | Grafana + Loki | 서비스명, 로그 레벨, request_id, trace_id 조회 목적을 충족한다. |
-| Logstash/Fluentd 로그 파이프라인 | OpenTelemetry Collector + Loki | 로그 수집, 처리, 적재 목적을 충족한다. |
-| `/health`, `/health/ready` | `/healthz`, `/readyz` | Kubernetes probe 목적을 충족한다. |
-
-## 9. 아직 체크하면 안 되는 핵심 항목
-
-다음은 기반이 있어도 아직 체크하면 안 된다.
-
-```text
-운영급 HPA scale-out
-  2026-06-16 Phase 7에서 제한적 1 -> 2 HPA controller smoke는 확인했다.
-  다만 현재 핵심 서비스 maxPods가 대부분 1이라 k6 기반 p99/5xx/scale-out time 증거는 아직 없다.
-
-Istio mTLS
-  scenario manifest와 Git push는 완료됐지만 PeerAuthentication/AuthorizationPolicy runtime 적용과 통신 검증이 없다.
-
-Canary / rollback 성공
-  manifest와 canary v2 values push는 완료됐지만 실제 traffic ratio와 rollback time이 없다.
-
-Circuit Breaker 동작
-  DestinationRule은 있지만 장애 주입과 ejection 증거가 없다.
-
-Slack 알림
-  Discord는 있으나 Slack 목표를 만족했다고 체크할 수는 없다.
-
-S3 ticket artifact
-  S3_BUCKET 기반은 있으나 실제 object 생성 증거가 없다.
-
-SLA / MTTR / 운영 보고
-  runbook과 trouble 문서는 있으나 정량 보고서가 없다.
-
-NetworkPolicy 차단 검증
-  서비스 앱 포트 baseline 차단과 private-dev DB/Kafka 접근 제어 runtime PASS 증거가 있다.
-  다만 auth/ticket/concert 역할 Pod까지 같은 표로 확장하면 커버리지가 더 좋아진다.
-```
-
-## 10. 다음 진행 순서
-
-2026-06-17 기준으로는 이미 완료된 Phase 2~8 증거를 반복하기보다, GitOps 최신 revision 반영과 runtime 검증을 먼저 닫는 순서가 맞다.
-
-```text
-1. RBAC / ServiceAccount 권한을 `kubectl auth can-i`로 검증한다.
-2. OutOfSync 앱을 Application별로 분리한다.
-   data-private-dev는 NetworkPolicy가 아니라 StatefulSet drift가 원인인지 계속 분리해서 본다.
-3. 기본 프로젝트 문서 구멍을 닫는다.
-   event-storming, service-communication-policy, failure-isolation을 작성한다.
-4. HPA maxReplicas 상향 scenario로 운영급 scale-out 검증을 별도 환경 또는 사양이 충분한 private-dev에서 수행한다.
-5. mTLS STRICT scenario를 제한 범위로 적용하고 mesh 내부 통신과 Kong 외부 진입 경로가 깨지지 않는지 확인한다.
-6. reservation canary v2를 실제로 배포하고 20/50/100 traffic split ratio를 측정한다.
-7. rollback manifest 적용 시간을 측정해 rollback_time_seconds를 남긴다.
-8. circuit breaker/fault injection은 endpoint 수가 충분한 환경에서 outlier ejection 또는 실패 격리 증거를 남긴다.
-9. Alertmanager receiver와 알림 경로를 검증한다.
-10. S3 ticket artifact upload를 검증한다.
-11. SLA / MTTR / Before-After 운영 보고서를 작성한다.
-```
