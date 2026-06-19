@@ -516,8 +516,9 @@ mTLS, canary traffic split, rollback time, circuit breaker는 manifest 준비와
 
 - [ ] SonarQube 정적 분석을 통합한다. `이번에포함`, `미충족`, `이석진`
 
-- [ ] code coverage가 몇%인지 측정해서 남기기. `이번에포함`, `부분 충족`, `최범휘`
+- [x] code coverage가 몇%인지 측정해서 남기기. `이번에포함`, `부분 충족`, `최범휘`
   - coverage report 생성 기반은 있으나 80% gate 증거는 부족하다.
+  - [Service Unit Test 증거](../../../../evidence/ci/service-unit-tests/README.md)
 
 - [ ] Critical issue 발견 시 pipeline을 중단하고 PR comment를 게시한다. `이번에포함`, `미충족`, `이석진`
 
