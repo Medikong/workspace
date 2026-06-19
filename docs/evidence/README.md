@@ -29,3 +29,4 @@ docs/evidence/security/network-policy-block/
 | observability | metric, log, trace, dashboard 검증 결과 | [observability/README.md](observability/README.md) |
 | loadtest | k6 부하테스트 실행 조건, 결과, 병목 분석 근거 | [loadtest/README.md](loadtest/README.md) |
 | services | 서비스별 병목 원인과 개선 방향 정리 | [services/README.md](services/README.md) |
+| security | RBAC, ServiceAccount, NetworkPolicy, Gateway 보안 정책 검증 결과 | [security/README.md](security/README.md) |

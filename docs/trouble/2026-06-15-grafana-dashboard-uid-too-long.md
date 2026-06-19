@@ -1,5 +1,5 @@
 ---
-id: TROUBLE-008
+id: TROUBLE-009
 title: "Grafana dashboard UID 길이 초과로 Load 50 미노출"
 status: resolved
 priority: p2

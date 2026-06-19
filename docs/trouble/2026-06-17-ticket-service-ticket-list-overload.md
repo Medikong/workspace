@@ -1,5 +1,5 @@
 ---
-id: TROUBLE-011
+id: TROUBLE-012
 title: "부하테스트 중 ticket-service /tickets/me 전체 목록 조회 과부하"
 status: triaged
 priority: p1
@@ -22,7 +22,7 @@ tags:
   - connection-pool
   - reservation-journey
 related:
-  - TROUBLE-010
+  - TROUBLE-011
   - gitops/platform/loadtest/scenarios/reservation-journey-load-test.js
   - gitops/platform/loadtest/flows/reservation-journey.js
   - service/services/ticket-service/app/services/ticket_service.py

@@ -127,16 +127,56 @@ medikong/
 | Grafana | http://localhost/grafana | `gitops` 레포에서 `task dev` 혹은 `task --taskfile platform/monitoring/Taskfile.yml up` 실행 |
 | pgAdmin | http://localhost/pgadmin | `gitops` 레포에서 `task dev` 혹은 `task dev:data` 실행. 로그인 `admin@example.com` / `admin`, DB 접속 `user` / `password` |
 
+## GitHub 이미지 배포
+
+초기 전체 서비스 배포나 강제 전체 배포가 필요하면 `service` repo에서 먼저 미리보기 후 실제 태그를 만든다.
+
+```bash
+task deploy:tag SERVICE=all BUMP=patch DRY_RUN=true
+task deploy:tag SERVICE=all BUMP=patch
+```
+
+- 실행 절차: [docs/runbooks/deployment/tag-based-image-deploy.md](docs/runbooks/deployment/tag-based-image-deploy.md)
+- 배포 구조: [docs/architecture/deployment/README.md](docs/architecture/deployment/README.md)
+
 ## AWS Dev 접속 주소
 
 | 이름 | 주소 | 비고 |
 | --- | --- | --- |
 | Grafana | http://medikong-default-kong-nlb-c17a54e23efd293c.elb.ap-northeast-2.amazonaws.com:32407/grafana/ | 보안그룹 `sg-00ec124430d0eab68`의 `32407` 허용 목록에 공인 IP가 있어야 접속할 수 있습니다. |
 
-## 현재 진행상황
 
-기본 프로젝트에서는 모노레포와 대주제 중심 작업 분배로 인해 역할 충돌, 중복 작업, 진행상황 파악 문제가 있었습니다.
-현재는 repo를 책임별로 분리하고, `workspace`를 공통 문서와 진행 기준점으로 두어 협업 구조를 재정비하고 있습니다.
+**지금까지 한 일**
+- 기본 예매 과정 연결
+  로그인, 공연/좌석 조회, 예약, 결제, 티켓 발급, 알림까지 연결
+- 좌석 중복 예매 방지
+  같은 좌석이 두 번 예매되지 않도록 충돌 처리와 테스트 추가
+- Kafka 기반 후속 처리 분리
+  예약 이후 티켓 발급과 알림 처리를 이벤트로 분리
+- 자동 검증 기반 마련
+  Docker Compose와 Newman으로 전체 예매 과정 확인
+- Kubernetes 배포 구성
+  Helm, Argo CD 기반 서비스 배포 구조 정리
+- 운영·보안 설정 준비
+  Kong, Istio, HPA, NetworkPolicy 적용
+- 관측 환경 구성
+  Prometheus, Grafana, Loki, Tempo로 지표, 로그, trace 확인
+- 부하테스트 준비
+  k6 기반 자동 점검과 부하테스트 구성 진행
+
+**아직 남은 일**
+- 부하테스트 반복 실행
+  k6로 트래픽이 몰리는 상황 검증
+- 핵심 지표 확인
+  예매 성공률, 응답시간, 에러율, 중복 티켓 수 측정
+- 자동 확장 검증
+  부하 상황에서 HPA가 pod를 늘리는지 확인
+- 후속 처리 지연 점검
+  Kafka 처리 지연, 티켓 발급 지연, 알림 실패 여부 확인
+- 병목 지점 정리
+  Grafana 대시보드와 로그를 기준으로 원인 분석
+- 발표 자료용 증거 정리
+  실험 수치와 화면 캡처 정리
 
 ## 심화 프로젝트 방향
 
@@ -173,6 +213,7 @@ medikong/
 ## 아키텍처
 
 - repo별 책임 경계: [docs/architecture/repo-boundaries.md](docs/architecture/repo-boundaries.md)
+- 태그 기반 이미지 배포: [docs/architecture/deployment/README.md](docs/architecture/deployment/README.md)
 - 관측성 아키텍처: [docs/architecture/observability/README.md](docs/architecture/observability/README.md)
 - 감사 로그 아키텍처: [docs/architecture/audit-logs/README.md](docs/architecture/audit-logs/README.md)
 

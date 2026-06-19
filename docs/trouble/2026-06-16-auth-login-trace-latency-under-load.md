@@ -1,5 +1,5 @@
 ---
-id: TROUBLE-010
+id: TROUBLE-011
 title: "부하테스트 중 auth login trace의 미계측 지연 구간"
 status: in_progress
 priority: p1
@@ -25,7 +25,7 @@ tags:
   - postgres
   - connection-pool
 related:
-  - TROUBLE-009
+  - TROUBLE-010
   - docs/evidence/loadtest/reservation-journey-auth-bottleneck/README.md
   - service/services/auth-service/app/main.py
   - service/services/auth-service/app/security.py
@@ -195,7 +195,7 @@ Pyroscope span profile을 켠 뒤 확인한 trace에서는 root span 내부에 f
 
 ## Decision
 
-- 이 현상은 `TROUBLE-010`으로 분리해 추적한다.
+- 이 현상은 `TROUBLE-011`으로 분리해 추적한다.
 - 주요 원인은 auth-service와 auth-db 사이의 connection budget 불일치로 보되, concert-service의 QueuePool timeout까지 포함해 서비스 공통 pool sizing 문제로 확장해서 본다.
 - 우선 조치는 SQLAlchemy pool을 명시적으로 관리하고, 서비스별로 `replicas * (pool_size + max_overflow)`가 DB `max_connections`보다 작게 유지되도록 만드는 것이다.
 - trace는 요청 전체 지연과 DB span 차이를 찾는 용도로 쓰고, Pyroscope span profile은 실제 stack과 connection 대기 위치를 확인하는 보조 근거로 사용한다.

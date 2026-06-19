@@ -1,5 +1,5 @@
 ---
-id: TROUBLE-009
+id: TROUBLE-010
 title: "로컬 부하테스트 k6 Pod IP 단위 Kong rate limit"
 status: triaged
 priority: p2
