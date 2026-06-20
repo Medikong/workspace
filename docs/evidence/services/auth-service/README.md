@@ -18,6 +18,8 @@
 | latency graph | [auth login latency graph](assets/2026-06-16-auth-login-trace-latency-graphs.png) |
 | password span capture | [auth login password verify span](assets/2026-06-16-auth-login-trace-latency-password-span.png) |
 | profile capture | [auth login flame graph and connection error](assets/2026-06-17-auth-login-trace-flamegraph-too-many-clients.png) |
+| Argon2id benchmark | [Argon2id password verify benchmark](2026-06-20-argon2id-password-verify-benchmark.md) |
+| PBKDF2 RPS benchmark | [PBKDF2 concurrency RPS benchmark](2026-06-20-pbkdf2-concurrency-rps-benchmark.md) |
 
 ## Evidence Captures
 
