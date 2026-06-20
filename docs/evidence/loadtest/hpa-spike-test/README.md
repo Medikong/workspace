@@ -126,6 +126,8 @@ Smoke는 성능 판단용 수치가 아니다. 실패하면 본 실행을 하지
 | 2026-06-20 | `local-hpa-spike-3m` | `read-api-loadtest-read-manual-20260620055847-9tmqz` | k6 PASS, HPA scale-out 미발생 | [reports/local-hpa-spike-3m-2026-06-20/analysis-report.md](reports/local-hpa-spike-3m-2026-06-20/analysis-report.md) |
 | 2026-06-20 | `local-hpa-spike-scaleout-6m` | `read-api-loadtest-read-manual-20260620070803-l2fp4` | HPA scale-out 발생, k6 FAIL | [reports/local-hpa-spike-scaleout-6m-2026-06-20/analysis-report.md](reports/local-hpa-spike-scaleout-6m-2026-06-20/analysis-report.md) |
 | 2026-06-20 | `local-hpa-spike-scaleout-6m` | `read-api-loadtest-read-manual-20260620072343-zpsp2` | memory limit 제거 후에도 k6 FAIL, concert DB pool exhaustion 의심 | [reports/local-hpa-spike-scaleout-6m-memory-unlimited-2026-06-20/analysis-report.md](reports/local-hpa-spike-scaleout-6m-memory-unlimited-2026-06-20/analysis-report.md) |
+| 2026-06-20 | `local-hpa-spike-scaleout-6m` | `read-api-loadtest-read-manual-20260620074237-npbmp` | concert pool 조정 후 k6 FAIL, reservation DB pool exhaustion 의심 | [reports/local-hpa-spike-scaleout-6m-concert-pool-20-2026-06-20/analysis-report.md](reports/local-hpa-spike-scaleout-6m-concert-pool-20-2026-06-20/analysis-report.md) |
+| 2026-06-20 | `local-hpa-spike-scaleout-6m` | `read-api-loadtest-read-manual-20260620075515-4tjs4` | 전체 DB pool 조정 후 k6 FAIL, concert QueuePool `20/20/10` 재포화 | [reports/local-hpa-spike-scaleout-6m-db-pool-20-2026-06-20/analysis-report.md](reports/local-hpa-spike-scaleout-6m-db-pool-20-2026-06-20/analysis-report.md) |
 
 ## Follow Up
 
