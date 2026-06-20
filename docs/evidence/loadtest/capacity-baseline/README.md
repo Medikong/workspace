@@ -13,6 +13,7 @@
 
 | 실행 | 서비스 | 조건 | 문서 |
 | --- | --- | --- | --- |
+| 2026-06-20 | auth-service | `1000m`, single replica, HPA off, auth-only `30 -> 40` | [reports/auth-service-1000m-2026-06-20/README.md](reports/auth-service-1000m-2026-06-20/README.md) |
 | 2026-06-19 | auth-service | `500m`, single replica, HPA off | [reports/auth-service-500m-2026-06-19/README.md](reports/auth-service-500m-2026-06-19/README.md) |
 
 ## Purpose
