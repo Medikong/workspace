@@ -36,6 +36,7 @@
 | TROUBLE-016 | closed | p1 | service | notification-service 알림 목록 전체 materialize로 인한 heavy 사용자 응답 지연 | [2026-06-20-notification-list-full-materialization.md](2026-06-20-notification-list-full-materialization.md) |
 | TROUBLE-017 | closed | p2 | service | payment-service 정산 기준 API의 중복 집계 쿼리와 인덱스 미스매치 | [2026-06-20-payment-service-settlement-query-aggregate-index.md](2026-06-20-payment-service-settlement-query-aggregate-index.md) |
 | TROUBLE-018 | closed | p1 | service | FastAPI API/worker 실행 단위 혼재로 capacity-baseline 병목이 커진 문제 | [2026-06-21-fastapi-worker-execution-unit-mixed-bottleneck.md](2026-06-21-fastapi-worker-execution-unit-mixed-bottleneck.md) |
+| TROUBLE-019 | open | p1 | service | HPA scale-out 후 DB connection budget 초과가 다시 병목이 된 문제 | [2026-06-21-hpa-scaleout-db-connection-budget.md](2026-06-21-hpa-scaleout-db-connection-budget.md) |
 
 새 트러블을 추가하면 위 표에 한 줄을 추가한다. 해결된 기록도 삭제하지 않고 `status: closed`로 유지한다.
 

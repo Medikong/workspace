@@ -6,6 +6,15 @@
 
 HPA spike test는 CPU request를 새로 계산하는 실험이 아니다. 선행 capacity baseline 결과로 정한 서비스별 CPU request를 적용한 뒤, 갑자기 늘어나는 예매 트래픽에서 HPA 판단과 Pod Ready 시간이 정상적으로 이어지는지 본다.
 
+aws-dev reservation journey 실험은 DB connection budget gate를 먼저 통과해야 한다. 서비스/Helm 배포, HPA `2/10/70%`, SQLAlchemy pool budget, dataset setup이 확인되기 전에는 loadtest Job을 실행하지 않는다.
+
+## Documents
+
+| 문서 | 용도 |
+| --- | --- |
+| [AWS Dev Reservation Journey Scale-out Plan](aws-dev-journey-scaleout-plan-2026-06-21.md) | `aws-dev`에서 `10 journey/s` 단위로 예매 journey 부하를 늘리며 HPA와 필요 Pod 수를 산정하는 실험 계획 |
+| [TROUBLE-019](../../../trouble/2026-06-21-hpa-scaleout-db-connection-budget.md) | HPA scale-out 이후 DB connection budget 초과가 발생한 원인과 aws-dev 차단 조건 |
+
 ## One Line Command
 
 ```bash
@@ -143,11 +152,10 @@ Report에는 `stage_results`, `first_limit_candidate`, `scale_out_results`, `ser
 | ticket-service | `ticket-75rps` | `75 RPS` |
 | notification-service | `notification-400rps` | `400 RPS` |
 
-재시도용 preset은 기존 실행 결과를 바탕으로 따로 둔다. `payment-150rps`는 post-run CPU가 `42%/70%`, `ticket-75rps`는 `54%/70%`였으므로 RPS와 측정 duration을 올린다.
+재시도용 preset은 기존 실행 결과를 바탕으로 따로 둔다. `concert-140rps`는 재실험에서 `2 -> 4` scale-out과 Ready 도달을 확인했으므로 HPA 반응은 유효하다. 다만 baseline 80 RPS부터 일부 API가 SLO를 넘었고 k6 threshold는 실패했다. 추가 trace 확인 결과 직접 원인은 `concert-db` connection exhaustion이다. `payment-150rps`는 post-run CPU가 `42%/70%`, `ticket-75rps`는 `54%/70%`였으므로 RPS와 측정 duration을 올린다.
 
 | 서비스 | retry preset | target | 변경 |
 | --- | --- | ---: | --- |
-| concert-service | `concert-140rps` | `140 RPS` | RPS 유지, 시작 전 replica 1 안정화 필요 |
 | payment-service | `payment-250rps` | `250 RPS` | baseline/spike/overload/cooldown `90s` |
 | ticket-service | `ticket-110rps` | `110 RPS` | baseline/spike/overload/cooldown `90s` |
 
@@ -162,10 +170,9 @@ SCENARIO=service-hpa-spike-load-test PRESET=ticket-75rps task --dir gitops dev:l
 SCENARIO=service-hpa-spike-load-test PRESET=notification-400rps task --dir gitops dev:loadtest
 ```
 
-실패/재실험 대상 3개는 아래 명령으로 다시 실행한다.
+실패/재실험 대상 2개는 아래 명령으로 다시 실행한다.
 
 ```bash
-SCENARIO=service-hpa-spike-load-test PRESET=concert-140rps task --dir gitops dev:loadtest
 SCENARIO=service-hpa-spike-load-test PRESET=payment-250rps task --dir gitops dev:loadtest
 SCENARIO=service-hpa-spike-load-test PRESET=ticket-110rps task --dir gitops dev:loadtest
 ```
@@ -182,7 +189,7 @@ SCENARIO=service-hpa-spike-load-test PRESET=ticket-110rps task --dir gitops dev:
 | 2026-06-20 | `local-hpa-spike-scaleout-6m` | `read-api-loadtest-read-manual-20260620082308-ms2vc` | concert pool `35/10/15` 후 40 j/s OK, 50 j/s concert timeout | [reports/local-hpa-spike-scaleout-6m-concert-pool-35-2026-06-20/analysis-report.md](reports/local-hpa-spike-scaleout-6m-concert-pool-35-2026-06-20/analysis-report.md) |
 | 2026-06-21 | `service-hpa-spike-summary` | `-` | 서비스별 HPA spike 6개 preset 종합 비교 | [reports/service-hpa-spike-summary-2026-06-21/README.md](reports/service-hpa-spike-summary-2026-06-21/README.md) |
 | 2026-06-21 | `auth-30rps` | `read-api-loadtest-read-manual-20260621092401-jqx9r` | FAIL, HPA 유효 | [reports/service-hpa-spike-auth-30rps/README.md](reports/service-hpa-spike-auth-30rps/README.md) |
-| 2026-06-21 | `concert-140rps` | `read-api-loadtest-read-manual-20260621094621-hgnfb` | PASS, RPS 부족 / baseline 2 재실험 필요 | [reports/service-hpa-spike-concert-140rps/README.md](reports/service-hpa-spike-concert-140rps/README.md) |
+| 2026-06-21 | `concert-140rps` | `read-api-loadtest-read-manual-20260621121910-8crjb` | FAIL, HPA `2 -> 4` 유효 / `concert-db` connection exhaustion | [reports/service-hpa-spike-concert-140rps/README.md](reports/service-hpa-spike-concert-140rps/README.md) |
 | 2026-06-21 | `reservation-140rps` | `read-api-loadtest-read-manual-20260621101259-5vcqs` | PASS, HPA 유효 | [reports/service-hpa-spike-reservation-140rps/README.md](reports/service-hpa-spike-reservation-140rps/README.md) |
 | 2026-06-21 | `payment-150rps` | `read-api-loadtest-read-manual-20260621102039-tvll7` | PASS, RPS 부족 | [reports/service-hpa-spike-payment-150rps/README.md](reports/service-hpa-spike-payment-150rps/README.md) |
 | 2026-06-21 | `ticket-75rps` | `read-api-loadtest-read-manual-20260621102813-mjt9v` | PASS, RPS 부족 | [reports/service-hpa-spike-ticket-75rps/README.md](reports/service-hpa-spike-ticket-75rps/README.md) |
