@@ -78,6 +78,21 @@ flowchart TB
 - `gitops/values/services/*.yaml`
 - `gitops/platform/istio/traffic/reservation/*.yaml`
 
+## 후속 검증 계획
+
+HPA spike test는 부하 증가 후 HPA가 언제 desired replica를 올리고, 새 Pod가 Ready 상태가 된 뒤 품질이 회복되는지 확인한다. 이 실험과 별도로, scale-out 이후 고정 replica 상태의 처리 효율을 확인하는 후속 검증이 필요하다.
+
+| 항목 | 계획 |
+| --- | --- |
+| 목적 | HPA 이후 `2 replicas` 상태에서 RPS 증가가 p95/p99에 미치는 영향을 확인 |
+| 후보 scenario | `service-replica-efficiency-load-test` |
+| 후보 preset | `auth-2replicas-30-50-60rps` |
+| 전제 | `auth-service`를 `2 replicas`로 고정하고 HPA 영향을 제거하거나 `minReplicas=maxReplicas=2`로 둔다 |
+| 기준 | `CPU request=1000m`, 동일 dataset, 동일 gateway 조건 |
+| 비교 | `30 RPS`를 baseline으로 두고 `50 RPS`, `60 RPS`의 p95/p99 증가율, error/checks, pod별 CPU 분산을 본다 |
+
+이 검증은 HPA가 늦게 반응하는지를 보는 실험이 아니다. 이미 확장된 뒤 replica 2개가 `30 RPS` 대비 `50-60 RPS`를 얼마나 선형적으로 처리하는지 확인하는 `post-scale capacity validation`이다. 따라서 `service-hpa-spike-load-test`에 얹기보다 별도 scenario와 preset으로 분리한다.
+
 ## 확인 필요
 
 - AWS dev에서 DB/Kafka가 Argo CD `platform/data`로 실제 관리되는지, 아니면 별도 방식으로 준비되는지는 문서마다 표현이 달라 추가 확인이 필요하다.

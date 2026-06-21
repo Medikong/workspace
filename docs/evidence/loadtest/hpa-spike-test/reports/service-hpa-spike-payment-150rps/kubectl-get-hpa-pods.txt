@@ -1,0 +1,8 @@
+NAME                                                  REFERENCE                    TARGETS        MINPODS   MAXPODS   REPLICAS   AGE
+horizontalpodautoscaler.autoscaling/payment-service   Deployment/payment-service   cpu: 42%/70%   1         4         1          70m
+
+NAME                                              READY   STATUS    RESTARTS      AGE     IP             NODE              NOMINATED NODE   READINESS GATES
+pod/payment-db-0                                  1/1     Running   0             8h      10.244.3.60    desktop-worker2   <none>           <none>
+pod/payment-service-655744b87-gps6z               1/1     Running   0             7m20s   10.244.1.193   desktop-worker3   <none>           <none>
+pod/payment-service-background-5b75bf6484-qcwrc   1/1     Running   3 (27s ago)   7m20s   10.244.2.114   desktop-worker    <none>           <none>
+pod/pgadmin-74bfdb7477-xk7qp                      1/1     Running   0             8h      10.244.3.57    desktop-worker2   <none>           <none>

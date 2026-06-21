@@ -72,16 +72,16 @@ Smoke는 성능 판단용 수치가 아니다. 실패하면 본 실행을 하지
 | CPU limit | `null` |
 | ServiceMonitor | enabled |
 
-서비스별 CPU request는 capacity baseline 최신 결과를 기준으로 잡되, 로컬 scale-out 검증에서 HPA 반응을 확인해야 하는 write/read 경로는 50 journey/s 구간에서 target CPU에 가까워지도록 낮춘다.
+전체 예매 과정 spike test는 capacity baseline 결과를 바탕으로 서비스별 CPU request를 조정할 수 있다. 반면 서비스별 HPA spike test는 서비스 간 비교와 원인 분리를 쉽게 하기 위해 `1000m` 기준으로 맞춘다.
 
 | 서비스 | CPU request | 기준 |
 | --- | ---: | --- |
-| auth-service | `2400m` | setup성 작업이므로 scale-out 검증용으로 하향 |
-| concert-service | `781m` | capacity baseline 후보 유지 |
-| reservation-service | `250m` | 50 journey/s scale-out 검증용 |
-| payment-service | `340m` | 50 journey/s scale-out 검증용 |
-| ticket-service | `380m` | 50 journey/s scale-out 검증용 |
-| notification-service | `427m` | capacity baseline 후보 유지 |
+| auth-service | `1000m` | 서비스별 spike 공통 기준 |
+| concert-service | `1000m` | 서비스별 spike 공통 기준 |
+| reservation-service | `1000m` | 서비스별 spike 공통 기준 |
+| payment-service | `1000m` | 서비스별 spike 공통 기준 |
+| ticket-service | `1000m` | 서비스별 spike 공통 기준 |
+| notification-service | `1000m` | 서비스별 spike 공통 기준 |
 
 ## Helm Chart Layout
 
@@ -143,6 +143,14 @@ Report에는 `stage_results`, `first_limit_candidate`, `scale_out_results`, `ser
 | ticket-service | `ticket-75rps` | `75 RPS` |
 | notification-service | `notification-400rps` | `400 RPS` |
 
+재시도용 preset은 기존 실행 결과를 바탕으로 따로 둔다. `payment-150rps`는 post-run CPU가 `42%/70%`, `ticket-75rps`는 `54%/70%`였으므로 RPS와 측정 duration을 올린다.
+
+| 서비스 | retry preset | target | 변경 |
+| --- | --- | ---: | --- |
+| concert-service | `concert-140rps` | `140 RPS` | RPS 유지, 시작 전 replica 1 안정화 필요 |
+| payment-service | `payment-250rps` | `250 RPS` | baseline/spike/overload/cooldown `90s` |
+| ticket-service | `ticket-110rps` | `110 RPS` | baseline/spike/overload/cooldown `90s` |
+
 이번 구성 변경에서는 smoke/load 실행을 하지 않는다. 현재 다른 테스트가 실행 중이므로 아래 명령은 나중에 실행할 예시로만 둔다.
 
 ```bash
@@ -152,6 +160,14 @@ SCENARIO=service-hpa-spike-load-test PRESET=reservation-140rps task --dir gitops
 SCENARIO=service-hpa-spike-load-test PRESET=payment-150rps task --dir gitops dev:loadtest
 SCENARIO=service-hpa-spike-load-test PRESET=ticket-75rps task --dir gitops dev:loadtest
 SCENARIO=service-hpa-spike-load-test PRESET=notification-400rps task --dir gitops dev:loadtest
+```
+
+실패/재실험 대상 3개는 아래 명령으로 다시 실행한다.
+
+```bash
+SCENARIO=service-hpa-spike-load-test PRESET=concert-140rps task --dir gitops dev:loadtest
+SCENARIO=service-hpa-spike-load-test PRESET=payment-250rps task --dir gitops dev:loadtest
+SCENARIO=service-hpa-spike-load-test PRESET=ticket-110rps task --dir gitops dev:loadtest
 ```
 
 ## Reports
@@ -164,6 +180,14 @@ SCENARIO=service-hpa-spike-load-test PRESET=notification-400rps task --dir gitop
 | 2026-06-20 | `local-hpa-spike-scaleout-6m` | `read-api-loadtest-read-manual-20260620074237-npbmp` | concert pool 조정 후 k6 FAIL, reservation DB pool exhaustion 의심 | [reports/local-hpa-spike-scaleout-6m-concert-pool-20-2026-06-20/analysis-report.md](reports/local-hpa-spike-scaleout-6m-concert-pool-20-2026-06-20/analysis-report.md) |
 | 2026-06-20 | `local-hpa-spike-scaleout-6m` | `read-api-loadtest-read-manual-20260620075515-4tjs4` | 전체 DB pool 조정 후 k6 FAIL, concert QueuePool `20/20/10` 재포화 | [reports/local-hpa-spike-scaleout-6m-db-pool-20-2026-06-20/analysis-report.md](reports/local-hpa-spike-scaleout-6m-db-pool-20-2026-06-20/analysis-report.md) |
 | 2026-06-20 | `local-hpa-spike-scaleout-6m` | `read-api-loadtest-read-manual-20260620082308-ms2vc` | concert pool `35/10/15` 후 40 j/s OK, 50 j/s concert timeout | [reports/local-hpa-spike-scaleout-6m-concert-pool-35-2026-06-20/analysis-report.md](reports/local-hpa-spike-scaleout-6m-concert-pool-35-2026-06-20/analysis-report.md) |
+| 2026-06-21 | `service-hpa-spike-summary` | `-` | 서비스별 HPA spike 6개 preset 종합 비교 | [reports/service-hpa-spike-summary-2026-06-21/README.md](reports/service-hpa-spike-summary-2026-06-21/README.md) |
+| 2026-06-21 | `auth-30rps` | `read-api-loadtest-read-manual-20260621092401-jqx9r` | FAIL, HPA 유효 | [reports/service-hpa-spike-auth-30rps/README.md](reports/service-hpa-spike-auth-30rps/README.md) |
+| 2026-06-21 | `concert-140rps` | `read-api-loadtest-read-manual-20260621094621-hgnfb` | PASS, RPS 부족 / baseline 2 재실험 필요 | [reports/service-hpa-spike-concert-140rps/README.md](reports/service-hpa-spike-concert-140rps/README.md) |
+| 2026-06-21 | `reservation-140rps` | `read-api-loadtest-read-manual-20260621101259-5vcqs` | PASS, HPA 유효 | [reports/service-hpa-spike-reservation-140rps/README.md](reports/service-hpa-spike-reservation-140rps/README.md) |
+| 2026-06-21 | `payment-150rps` | `read-api-loadtest-read-manual-20260621102039-tvll7` | PASS, RPS 부족 | [reports/service-hpa-spike-payment-150rps/README.md](reports/service-hpa-spike-payment-150rps/README.md) |
+| 2026-06-21 | `ticket-75rps` | `read-api-loadtest-read-manual-20260621102813-mjt9v` | PASS, RPS 부족 | [reports/service-hpa-spike-ticket-75rps/README.md](reports/service-hpa-spike-ticket-75rps/README.md) |
+| 2026-06-21 | `notification-400rps` | `read-api-loadtest-read-manual-20260621103553-7s2j9` | FAIL, HPA 유효 | [reports/service-hpa-spike-notification-400rps/README.md](reports/service-hpa-spike-notification-400rps/README.md) |
+| sample | `notification-400rps` | `-` | 서비스별 HPA spike 결론 작성 샘플 | [reports/service-hpa-spike-notification-400rps-sample/README.md](reports/service-hpa-spike-notification-400rps-sample/README.md) |
 
 ## Follow Up
 
