@@ -119,6 +119,41 @@ Smoke는 성능 판단용 수치가 아니다. 실패하면 본 실행을 하지
 | gateway 조건 | Kong rate limit이 실험 결과를 막지 않음 |
 | runner 조건 | dropped iterations나 runner OOM이 먼저 발생하지 않음 |
 
+## Service HPA Spike
+
+서비스별 HPA spike test는 전체 예매 과정 spike test를 대체하지 않는다. 전체 예매 과정 spike test는 사용자가 실제로 겪는 예매 흐름에서 운영 검증을 하는 용도이고, 서비스별 spike test는 특정 서비스의 HPA 판단과 Pod Ready 지연을 분리해서 보는 용도다.
+
+| 항목 | 값 |
+| --- | --- |
+| scenario | `service-hpa-spike-load-test` |
+| 목적 | 한 run에서 한 서비스만 측정해 HPA scale-out 원인을 분리 |
+| stage | `warmup -> baseline -> spike -> overload -> cooldown` |
+| warmup | 판단에서 제외 |
+| cooldown | scale-down 확정이 아니라 recovery 관찰로만 해석 |
+| report | `loadtest_run_report.scenario_report.report_type=service_hpa_spike` |
+
+Report에는 `stage_results`, `first_limit_candidate`, `scale_out_results`, `service_hpa_results`, `recovery_observations`가 남는다. 서비스별 HPA 결과는 `baseline_replicas`, `max_desired_replicas`, `hpa_decision_seconds`, `scale_out_ready_seconds`를 포함한다.
+
+| 서비스 | preset | 현재 target |
+| --- | --- | ---: |
+| auth-service | `auth-30rps` | `30 RPS` |
+| concert-service | `concert-140rps` | `140 RPS` |
+| reservation-service | `reservation-140rps` | `140 RPS` |
+| payment-service | `payment-150rps` | `150 RPS` |
+| ticket-service | `ticket-75rps` | `75 RPS` |
+| notification-service | `notification-400rps` | `400 RPS` |
+
+이번 구성 변경에서는 smoke/load 실행을 하지 않는다. 현재 다른 테스트가 실행 중이므로 아래 명령은 나중에 실행할 예시로만 둔다.
+
+```bash
+SCENARIO=service-hpa-spike-load-test PRESET=auth-30rps task --dir gitops dev:loadtest
+SCENARIO=service-hpa-spike-load-test PRESET=concert-140rps task --dir gitops dev:loadtest
+SCENARIO=service-hpa-spike-load-test PRESET=reservation-140rps task --dir gitops dev:loadtest
+SCENARIO=service-hpa-spike-load-test PRESET=payment-150rps task --dir gitops dev:loadtest
+SCENARIO=service-hpa-spike-load-test PRESET=ticket-75rps task --dir gitops dev:loadtest
+SCENARIO=service-hpa-spike-load-test PRESET=notification-400rps task --dir gitops dev:loadtest
+```
+
 ## Reports
 
 | 실행일 | preset | run id | 결과 | 분석 |
