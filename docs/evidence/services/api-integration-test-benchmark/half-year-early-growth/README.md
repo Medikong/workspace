@@ -4,7 +4,7 @@
 
 ## 종합 보고서
 
-- [Half-year early-growth API 기준 성능 종합 보고서](./service-baseline-summary.md)
+- [Half-year early-growth API 기준 성능 종합 보고서](../../service-baseline-summary.md)
 
 ## 목적
 

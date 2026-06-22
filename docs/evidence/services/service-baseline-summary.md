@@ -106,12 +106,12 @@ p99 환산 처리량 = 1000 / 서비스 내 최대 p99Ms
 
 | 서비스 | 원본 보고서 | artifact |
 | --- | --- | --- |
-| auth-service | `auth-service.md` | `service/tests/tmp/reports/api-integration/auth-service/half-year-early-growth/latest.json` |
-| concert-service | `concert-service.md` | `service/tests/tmp/reports/api-integration/concert-service/half-year-early-growth/latest.json` |
-| reservation-service | `reservation-service.md` | `service/tests/tmp/reports/api-integration/reservation-service/half-year-early-growth/latest.json` |
-| payment-service | `payment-service.md` | `service/tests/tmp/reports/api-integration/payment-service/half-year-early-growth/latest.json` |
-| ticket-service | `ticket-service.md` | `service/tests/tmp/reports/api-integration/ticket-service/half-year-early-growth/latest.json` |
-| notification-service | `notification-service.md` | `service/tests/tmp/reports/api-integration/notification-service/half-year-early-growth/latest.json` |
+| auth-service | [auth-service.md](api-integration-test-benchmark/half-year-early-growth/auth-service.md) | `service/tests/tmp/reports/api-integration/auth-service/half-year-early-growth/latest.json` |
+| concert-service | [concert-service.md](api-integration-test-benchmark/half-year-early-growth/concert-service.md) | `service/tests/tmp/reports/api-integration/concert-service/half-year-early-growth/latest.json` |
+| reservation-service | [reservation-service.md](api-integration-test-benchmark/half-year-early-growth/reservation-service.md) | `service/tests/tmp/reports/api-integration/reservation-service/half-year-early-growth/latest.json` |
+| payment-service | [payment-service.md](api-integration-test-benchmark/half-year-early-growth/payment-service.md) | `service/tests/tmp/reports/api-integration/payment-service/half-year-early-growth/latest.json` |
+| ticket-service | [ticket-service.md](api-integration-test-benchmark/half-year-early-growth/ticket-service.md) | `service/tests/tmp/reports/api-integration/ticket-service/half-year-early-growth/latest.json` |
+| notification-service | [notification-service.md](api-integration-test-benchmark/half-year-early-growth/notification-service.md) | `service/tests/tmp/reports/api-integration/notification-service/half-year-early-growth/latest.json` |
 
 ## 한계와 가정
 

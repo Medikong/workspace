@@ -14,6 +14,12 @@
 | `short-title/README.md` | 캡처, 로그, 산출물 등 asset이 필요한 트러블 기록 |
 | `short-title/assets/` | 트러블 문서에서 참조하는 이미지, 로그, 보조 증거 |
 
+## 종합 분석
+
+| 문서 | 용도 |
+| --- | --- |
+| [2026-06-22-service-bottleneck-summary.md](../evidence/services/2026-06-22-service-bottleneck-summary.md) | 서비스별 CPU, memory, network I/O, DB/pool 병목과 capacity/HPA/journey 실험 개선 방향 종합 |
+
 ## 트러블 인덱스
 
 | ID | 상태 | 우선순위 | 영역 | 제목 | 파일 |
@@ -35,7 +41,7 @@
 | TROUBLE-015 | triaged | p1 | service | concert-service catalog API overfetch로 인한 예매 부하테스트 병목 | [2026-06-20-concert-service-catalog-api-overfetch.md](2026-06-20-concert-service-catalog-api-overfetch.md) |
 | TROUBLE-016 | closed | p1 | service | notification-service 알림 목록 전체 materialize로 인한 heavy 사용자 응답 지연 | [2026-06-20-notification-list-full-materialization.md](2026-06-20-notification-list-full-materialization.md) |
 | TROUBLE-017 | closed | p2 | service | payment-service 정산 기준 API의 중복 집계 쿼리와 인덱스 미스매치 | [2026-06-20-payment-service-settlement-query-aggregate-index.md](2026-06-20-payment-service-settlement-query-aggregate-index.md) |
-| TROUBLE-018 | closed | p1 | service | FastAPI API/worker 실행 단위 혼재로 capacity-baseline 병목이 커진 문제 | [2026-06-21-fastapi-worker-execution-unit-mixed-bottleneck.md](2026-06-21-fastapi-worker-execution-unit-mixed-bottleneck.md) |
+| TROUBLE-018 | closed | p1 | service | FastAPI uvicorn worker 수 부족으로 capacity-baseline 병목이 발생한 문제 | [2026-06-21-fastapi-worker-execution-unit-mixed-bottleneck.md](2026-06-21-fastapi-worker-execution-unit-mixed-bottleneck.md) |
 | TROUBLE-019 | open | p1 | service | HPA scale-out 후 DB connection budget 초과가 다시 병목이 된 문제 | [2026-06-21-hpa-scaleout-db-connection-budget.md](2026-06-21-hpa-scaleout-db-connection-budget.md) |
 
 새 트러블을 추가하면 위 표에 한 줄을 추가한다. 해결된 기록도 삭제하지 않고 `status: closed`로 유지한다.

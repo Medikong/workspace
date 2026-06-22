@@ -74,7 +74,7 @@ SQLAlchemy engine은 worker process 안에서 생성된다. 따라서 Pod당 con
 
 ## 판단
 
-이번 문제는 이전 `TROUBLE-018`과 성격이 다르다. `TROUBLE-018`은 API process와 background worker 실행 단위가 섞여 capacity-baseline 병목을 키운 문제였고, `cmd/server`와 `cmd/worker` 분리로 해결했다.
+이번 문제는 이전 `TROUBLE-018`과 성격이 다르다. `TROUBLE-018`은 `uvicorn worker=1`로 FastAPI HTTP 처리 슬롯이 부족했던 문제였고, API worker 수를 조정하려면 FastAPI lifespan에 묶인 background loop를 HTTP server process와 분리해야 했다.
 
 이번 문제는 실행 단위 분리 이후에도 남은 HPA 환경의 connection budget 문제다. HPA가 정상 동작하면 Pod 수가 늘고, Pod 수가 늘면 worker process 수와 SQLAlchemy pool 총량도 같이 늘어난다. DB connection budget을 HPA 설계 제약으로 넣지 않으면 scale-out이 처리량 증가가 아니라 DB 접속 실패 증가로 이어질 수 있다.
 
